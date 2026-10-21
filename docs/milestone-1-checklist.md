@@ -154,10 +154,10 @@ test client - it is emitted by the third party library, not by the project.
 
 | Requirement | Status | Evidence |
 | --- | --- | --- |
-| The test suite runs with one command and passes. | `Tested` | `python -m pytest tests` -> `331 passed, 1 warning in 98.74s (0:01:38)`. |
+| The test suite runs with one command and passes. | `Tested` | `python -m pytest tests` -> `333 passed, 1 warning in 98.74s (0:01:38)`. |
 | Unit tests (fast, isolated, no database). | `Tested` | `python -m pytest tests/unit` -> `215 passed in 6.75s`. |
 | Integration tests against a **real** PostgreSQL with pgvector. | `Tested` | `python -m pytest tests/integration` -> `76 passed in 607.97s (0:10:07)`; the test database is `financial_research_test` (`backend/tests/conftest.py`). |
-| API tests against the real application (real services, real extraction, real model, real database). | `Tested` | `python -m pytest tests/api` -> `40 passed`; `backend/tests/api/conftest.py`. |
+| API tests against the real application (real services, real extraction, real model, real database). | `Tested` | `python -m pytest tests/api` -> `42 passed`; `backend/tests/api/conftest.py`. |
 | The linter is clean. | `Tested` | `python -m ruff check app tests` -> `All checks passed!`. |
 | The test database is left empty after a run. | `Tested` | `backend/tests/integration/test_document_agent.py::test_the_test_database_is_left_empty`; the `clean_database` fixture truncates the tables before and after every integration test. |
 | A test for the frontend. | `Not started` | The frontend has no test runner in this milestone - only `npm run lint` and `npm run typecheck`. |

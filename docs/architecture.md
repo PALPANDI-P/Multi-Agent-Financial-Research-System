@@ -330,12 +330,14 @@ having to defend against a mutation.
 
 ### Modular monolith, not microservices
 
-Milestone 1 has four tables, one ingestion pipeline and nine endpoints.  A
-microservice split would add a network hop, a distributed transaction and a
-deployment artefact per service without removing a single bottleneck.  The
-layers are already separated by protocols, therefore the *code* boundaries
-that a split would need already exist - and they can be turned into real
-services later without rewriting the business rules.
+Milestone 1 has four tables, one ingestion pipeline and 13 HTTP endpoints -
+12 under `/api/v1` plus a root index at `/` - which is a superset of the 9
+endpoint groups that the specification requires.  A microservice split would
+add a network hop, a distributed transaction and a deployment artefact per
+service without removing a single bottleneck.  The layers are already
+separated by protocols, therefore the *code* boundaries that a split would
+need already exist - and they can be turned into real services later without
+rewriting the business rules.
 
 ### No durable queue yet
 
