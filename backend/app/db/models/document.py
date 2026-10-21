@@ -1,8 +1,14 @@
 """Document ORM model.
 
 A document is an uploaded file that has been registered for processing.
-``processing_status`` mirrors the state of the ingestion pipeline while
-``processing_stage`` records the current step (for example ``extraction``).
+``processing_status`` mirrors the state of the ingestion pipeline and uses
+the explicit per-stage states of :class:`app.core.enums.ProcessingStatus`
+(``queued`` -> ``validating`` -> ``extracting`` -> ``chunking`` ->
+``embedding`` -> ``indexing`` -> ``completed``, plus ``failed``).
+
+``processing_stage`` is supplementary detail only (for example ``pdf_text``,
+``pdf_tables`` or ``ocr``).  It is **not** an independent status: the
+authoritative state is ``processing_status``.
 """
 
 from __future__ import annotations
@@ -24,25 +30,27 @@ from sqlalchemy import Enum as SAEnum
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.core.enums import ProcessingStatus
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 __all__ = ["Document", "DocumentProcessingStatus"]
 
 #: Allowed values of ``documents.processing_status``.
-DOCUMENT_PROCESSING_STATUSES: tuple[str, ...] = (
-    "queued",
-    "processing",
-    "completed",
-    "failed",
+DOCUMENT_PROCESSING_STATUSES: tuple[str, ...] = tuple(
+    status.value for status in ProcessingStatus
 )
 
 #: ``VARCHAR(32)`` plus a CHECK constraint (no native PostgreSQL enum type).
+#: For a non-native enum SQLAlchemy uses ``name`` as the name of the CHECK
+#: constraint, therefore it must be the constraint name required by the
+#: public contract: ``ck_documents_processing_status``.
 DocumentProcessingStatus = SAEnum(
-    *DOCUMENT_PROCESSING_STATUSES,
+    ProcessingStatus,
     name="ck_documents_processing_status",
     native_enum=False,
     length=32,
     create_constraint=True,
+    values_callable=lambda enum_cls: [member.value for member in enum_cls],
 )
 
 
@@ -87,10 +95,18 @@ class Document(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     processing_status: Mapped[str] = mapped_column(
         DocumentProcessingStatus,
         nullable=False,
-        default="queued",
-        server_default="queued",
+        default=ProcessingStatus.QUEUED.value,
+        server_default=ProcessingStatus.QUEUED.value,
     )
-    processing_stage: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    processing_stage: Mapped[str | None] = mapped_column(
+        String(64),
+        nullable=True,
+        comment=(
+            "Supplementary sub-stage detail (for example 'pdf_text', "
+            "'pdf_tables' or 'ocr'). NOT an independent status: the "
+            "authoritative state is 'processing_status'."
+        ),
+    )
     error_code: Mapped[str | None] = mapped_column(String(64), nullable=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
