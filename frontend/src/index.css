@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+ * Design tokens
+ * Tailwind v4 emits every variable declared in @theme as a real CSS custom
+ * property on :root, so the palette below is the single source of truth for
+ * colours, fonts and radii across the app.
+ * ------------------------------------------------------------------------- */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+
+  /* Neutrals / surfaces */
+  --color-canvas: #f4f6fb;
+  --color-surface: #ffffff;
+  --color-surface-muted: #eef1f7;
+  --color-line: #dee3ee;
+  --color-line-strong: #c3cbdb;
+
+  /* Text */
+  --color-ink: #101828;
+  --color-ink-muted: #4a5670;
+  --color-ink-subtle: #78829a;
+
+  /* Brand */
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #dbe7ff;
+  --color-brand-200: #b9d0ff;
+  --color-brand-500: #2f6fed;
+  --color-brand-600: #1f5bd8;
+  --color-brand-700: #1a49b0;
+
+  /* Semantic: success */
+  --color-success-50: #ecfdf5;
+  --color-success-100: #d1fae5;
+  --color-success-600: #047857;
+  --color-success-700: #065f46;
+
+  /* Semantic: warning */
+  --color-warning-50: #fffaeb;
+  --color-warning-100: #fef0c7;
+  --color-warning-600: #b45309;
+  --color-warning-700: #92400e;
+
+  /* Semantic: danger */
+  --color-danger-50: #fef2f2;
+  --color-danger-100: #fee2e2;
+  --color-danger-200: #fecaca;
+  --color-danger-600: #dc2626;
+  --color-danger-700: #b91c1c;
+
+  /* Semantic: info */
+  --color-info-50: #eff6ff;
+  --color-info-100: #dbeafe;
+  --color-info-200: #bfdbfe;
+  --color-info-600: #2563eb;
+  --color-info-700: #1d4ed8;
+
+  /* Radii */
+  --radius-control: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-pill: 999px;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Visible focus ring for every keyboard focusable element. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-100);
+    color: var(--color-brand-700);
+  }
+}
+
+@layer components {
+  /* Thin, unobtrusive scrollbars inside scrollable panels. */
+  .scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+}

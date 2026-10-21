@@ -21,6 +21,7 @@ workspace isolation is unusable for multi-tenant data.
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from types import MappingProxyType
@@ -32,10 +33,16 @@ from app.core.exceptions import VectorStoreError
 
 __all__ = [
     "MAX_SEARCH_LIMIT",
+    "METADATA_KEY_CONTENT_HASH",
+    "METADATA_KEY_EMBEDDING_CONFIG_HASH",
+    "METADATA_KEY_TOKEN_COUNT",
     "SearchHit",
     "VectorRecord",
     "VectorStore",
     "clamp_limit",
+    "record_content_hash",
+    "record_embedding_config_hash",
+    "record_token_count",
     "resolve_chunk_indexes",
 ]
 
@@ -146,6 +153,57 @@ class VectorStore(Protocol):
     ) -> dict[str, tuple[str, list[float]]]:
         """Return ``{content_hash: (embedding_config_hash, embedding)}``."""
         ...
+
+
+#: Key under which the SHA-256 hash of the content of a chunk is carried.
+METADATA_KEY_CONTENT_HASH = "content_hash"
+
+#: Key under which the hash of the embedding configuration is carried.
+#:
+#: The hash identifies the model (and the vector dimension) that produced a
+#: vector.  A stored vector may only be reused when its hash still matches
+#: the hash of the *current* embedding configuration, therefore the value is
+#: stored next to every vector instead of being derived by the store: the
+#: producer of a vector knows which model produced it.
+METADATA_KEY_EMBEDDING_CONFIG_HASH = "embedding_config_hash"
+
+#: Key under which the number of tokens of a chunk is carried.
+METADATA_KEY_TOKEN_COUNT = "token_count"
+
+
+def record_content_hash(record: VectorRecord) -> str:
+    """Return the content hash of *record*.
+
+    The hash is taken from the metadata of the record (key ``"content_hash"``).
+    When it is missing, the SHA-256 hex digest of the content of the record
+    is computed instead.
+    """
+    explicit = record.metadata.get(METADATA_KEY_CONTENT_HASH)
+    if isinstance(explicit, str) and explicit:
+        return explicit
+    return hashlib.sha256(record.content.encode("utf-8")).hexdigest()
+
+
+def record_embedding_config_hash(record: VectorRecord, default: str) -> str:
+    """Return the embedding configuration hash of *record*.
+
+    The hash is taken from the metadata of the record (key
+    ``"embedding_config_hash"``).  When it is missing, *default* is returned.
+    A store therefore never overrides the hash that the producer of the
+    record computed.
+    """
+    explicit = record.metadata.get(METADATA_KEY_EMBEDDING_CONFIG_HASH)
+    if isinstance(explicit, str) and explicit:
+        return explicit
+    return default
+
+
+def record_token_count(record: VectorRecord) -> int | None:
+    """Return the token count of *record*, or ``None`` when it is unknown."""
+    explicit = record.metadata.get(METADATA_KEY_TOKEN_COUNT)
+    if isinstance(explicit, int) and not isinstance(explicit, bool):
+        return explicit
+    return None
 
 
 def clamp_limit(limit: int) -> int:

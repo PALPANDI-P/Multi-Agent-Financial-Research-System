@@ -1,0 +1,74 @@
+{
+  "manifest_version": "1.0",
+  "generated_at": "2026-10-21T06:38:06.975184+00:00",
+  "documents": [
+    {
+      "company": "Walmart Inc.",
+      "title": "Walmart Inc. Form 10-K for the fiscal year ended January 31, 2026",
+      "document_type": "form_10k",
+      "fiscal_period": "FY2026",
+      "period_end": "2026-01-31",
+      "publication_date": "2026-04-23",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/104169/000010416926000091/wmtfy26annualreport-final.pdf",
+      "filename": "walmart_fy2026_form_10k.pdf",
+      "request_headers": {
+        "User-Agent": "FinancialResearchSeedLoader/1.0 (contact@example.com)"
+      },
+      "search_probe": "net sales consolidated statements of income",
+      "sha256": "550eaf563e00aa4862eb26f2a738b9c95968f3aa39e12f31e7076824e9ba9a8d",
+      "size_bytes": 14805939,
+      "page_count": 100
+    },
+    {
+      "company": "JPMorgan Chase & Co.",
+      "title": "JPMorgan Chase & Co. Audited Consolidated Financial Statements 2025",
+      "document_type": "financial_statements",
+      "fiscal_period": "FY2025",
+      "period_end": "2025-12-31",
+      "publication_date": "2026-04-06",
+      "source_url": "https://www.jpmorganchase.com/content/dam/jpmc/jpmorgan-chase-and-co/investor-relations/documents/audited-financial-statements-2025.pdf",
+      "filename": "jpmorgan_chase_fy2025_audited_financial_statements.pdf",
+      "request_headers": {
+        "User-Agent": "FinancialResearchSeedLoader/1.0 (contact@example.com)"
+      },
+      "search_probe": "net interest income noninterest revenue total assets deposits",
+      "sha256": "fff3692cded4ca4cdb377210a8d772c37ac946e16223b4ebbb558c6a57d95e08",
+      "size_bytes": 1145396,
+      "page_count": 167
+    },
+    {
+      "company": "Netflix, Inc.",
+      "title": "Netflix, Inc. Form 10-K for the fiscal year ended December 31, 2025",
+      "document_type": "form_10k",
+      "fiscal_period": "FY2025",
+      "period_end": "2025-12-31",
+      "publication_date": "2026-01-23",
+      "source_url": "https://s22.q4cdn.com/959853165/files/doc_financials/2025/ar/99482238-46b2-4d0d-b292-40e6781bdf03.pdf",
+      "filename": "netflix_fy2025_form_10k.pdf",
+      "request_headers": {
+        "User-Agent": "FinancialResearchSeedLoader/1.0 (contact@example.com)"
+      },
+      "search_probe": "streaming services revenue operating income consolidated statements of operations",
+      "sha256": "081fbe847afdee5ce4f522e4b89f2bf482c6a8992adfc509aec0c9106c31101f",
+      "size_bytes": 1406925,
+      "page_count": 122
+    },
+    {
+      "company": "Apple Inc.",
+      "title": "Apple Inc. Form 10-K for the fiscal year ended September 27, 2025",
+      "document_type": "form_10k",
+      "fiscal_period": "FY2025",
+      "period_end": "2025-09-27",
+      "publication_date": "2025-10-31",
+      "source_url": "https://s2.q4cdn.com/470004039/files/doc_financials/2025/ar/_10-K-2025-As-Filed.pdf",
+      "filename": "apple_fy2025_form_10k.pdf",
+      "request_headers": {
+        "User-Agent": "FinancialResearchSeedLoader/1.0 (contact@example.com)"
+      },
+      "search_probe": "net sales products services segment operating income research and development",
+      "sha256": "3eb270b22acb7d8d8e9c32a43dc221dec3345f8e4bca02755fdbc1ee16c823de",
+      "size_bytes": 1858048,
+      "page_count": 80
+    }
+  ]
+}

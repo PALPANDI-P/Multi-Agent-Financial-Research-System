@@ -214,3 +214,16 @@ class InMemoryVectorStore:
     ) -> dict[str, tuple[str, list[float]]]:
         """Return an empty mapping: the test store keeps no embedding state."""
         return {}
+
+    def existing_embeddings(
+        self,
+        document_id: UUID,
+    ) -> dict[str, tuple[str, list[float]]]:
+        """Return ``{content_hash: (embedding_config_hash, embedding)}``.
+
+        The method is an alias of :meth:`get_existing_embeddings`; it exists
+        so that the store satisfies the ``ExistingEmbeddingSource`` protocol
+        of :mod:`app.ingestion.pipeline`.  The test store keeps no embedding
+        state, therefore the mapping is always empty.
+        """
+        return self.get_existing_embeddings(document_id)

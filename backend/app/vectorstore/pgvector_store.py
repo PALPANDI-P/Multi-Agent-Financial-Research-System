@@ -44,6 +44,9 @@ from app.vectorstore.base import (
     SearchHit,
     VectorRecord,
     clamp_limit,
+    record_content_hash,
+    record_embedding_config_hash,
+    record_token_count,
     resolve_chunk_indexes,
 )
 
@@ -165,22 +168,6 @@ class PgVectorStore:
             ) from exc
 
     @staticmethod
-    def _content_hash(record: VectorRecord) -> str:
-        """Return the content hash stored next to *record*."""
-        explicit = record.metadata.get("content_hash")
-        if isinstance(explicit, str) and explicit:
-            return explicit
-        return hashlib.sha256(record.content.encode("utf-8")).hexdigest()
-
-    @staticmethod
-    def _token_count(record: VectorRecord) -> int | None:
-        """Return the token count stored next to *record*, if it is known."""
-        explicit = record.metadata.get("token_count")
-        if isinstance(explicit, int) and not isinstance(explicit, bool):
-            return explicit
-        return None
-
-    @staticmethod
     def _metadata_json(record: VectorRecord) -> dict[str, Any]:
         """Return the JSON serialisable metadata of *record*."""
         metadata = dict(record.metadata)
@@ -217,15 +204,17 @@ class PgVectorStore:
                     "document_id": record.document_id,
                     "chunk_index": chunk_index,
                     "content": record.content,
-                    "content_hash": self._content_hash(record),
+                    "content_hash": record_content_hash(record),
                     "page_start": record.page_start,
                     "page_end": record.page_end,
                     "section_heading": record.section_heading,
                     "chunk_type": self._validated_chunk_type(record.chunk_type),
-                    "token_count": self._token_count(record),
+                    "token_count": record_token_count(record),
                     "metadata_json": self._metadata_json(record),
                     "embedding": self._validated_embedding(record.embedding),
-                    "embedding_config_hash": self.embedding_config_hash,
+                    "embedding_config_hash": record_embedding_config_hash(
+                        record, self.embedding_config_hash
+                    ),
                 }
             )
 
@@ -377,3 +366,16 @@ class PgVectorStore:
             row.content_hash: (row.embedding_config_hash, list(row.embedding))
             for row in rows
         }
+
+    def existing_embeddings(
+        self,
+        document_id: UUID,
+    ) -> dict[str, tuple[str, list[float]]]:
+        """Return ``{content_hash: (embedding_config_hash, embedding)}``.
+
+        The method is an alias of :meth:`get_existing_embeddings`; it exists
+        so that the store satisfies the ``ExistingEmbeddingSource`` protocol
+        of :mod:`app.ingestion.pipeline` and can therefore be injected into
+        the pipeline directly.
+        """
+        return self.get_existing_embeddings(document_id)

@@ -118,10 +118,12 @@ class Settings(BaseSettings):
 
     # ---- processing pipeline --------------------------------------------------
     processing_max_attempts: int = 3
-    # Development strategy: the processing pipeline runs inline in the request
-    # process.  No background queue (Celery/RQ/arq) exists in M1, therefore
-    # this flag is informational and must be flipped once a worker exists.
-    processing_inline: bool = True
+    # Strategy: the processing pipeline runs in a background thread of the
+    # API process, never inline in the request that uploaded the document.
+    # A request therefore never blocks on the extraction of a document.  The
+    # inline runner exists for the scripts and the tests, which set the
+    # flag explicitly.
+    processing_inline: bool = False
     table_extraction_enabled: bool = True
     ocr_enabled: bool = False
     ocr_language: str = "eng"

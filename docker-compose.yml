@@ -1,0 +1,160 @@
+﻿# =============================================================================
+# Multi-Agent Financial Research System - container stack
+# =============================================================================
+# IMPORTANT - VERIFICATION STATUS
+# -----------------------------------------------------------------------------
+# This compose file was AUTHORED but NOT EXECUTED on the development machine:
+# Docker is not installed there (no `docker` on PATH, no Docker Desktop, no
+# WSL).  The stack has therefore never been started and the images have never
+# been built.  The path that WAS actually verified on the development machine
+# is the micromamba / uv one (PostgreSQL 16 + pgvector 0.8.6 installed with
+# micromamba, the backend run with uvicorn from `backend/.venv`).
+#
+# See the "Container stack (authored, not executed)" section of README.md.
+#
+# -----------------------------------------------------------------------------
+# Usage
+# -----------------------------------------------------------------------------
+#   copy .env.example .env          # then replace the password placeholder
+#   docker compose up --build       # start postgres + backend + frontend
+#   docker compose logs -f backend
+#   docker compose down             # stop the stack (the volumes are kept)
+#   docker compose down -v          # stop the stack AND delete the volumes
+#
+# The compose file reads its variables from the repository root `.env` file.
+# `DATABASE_URL` is assembled from `POSTGRES_USER` / `POSTGRES_PASSWORD` /
+# `POSTGRES_DB`; the password is never hard coded here.
+#
+# Every variable below the `environment:` block of the backend service is
+# optional: when it is not set the application falls back to its own default
+# (see backend/app/core/config.py).
+# =============================================================================
+
+name: frs
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16 with the pgvector extension
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: frs-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER:-frs}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-CHANGE_ME}"
+      POSTGRES_DB: "${POSTGRES_DB:-financial_research}"
+      # Deterministic collation so that the index behaves the same everywhere.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        # Install pgvector in the application database as the superuser, so
+        # that the Alembic migration that runs `CREATE EXTENSION IF NOT
+        # EXISTS vector` finds it already present.  The extension is shared
+        # with the other databases of the cluster and is never dropped.
+        psql -v ON_ERROR_STOP=1 -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}" \
+          -c "CREATE EXTENSION IF NOT EXISTS vector;"
+        exec postgres
+    ports:
+      # Published so that the local (non containerised) tooling can reach the
+      # same database; the application itself uses the internal network.
+      - "${POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - frs_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 15s
+
+  # ---------------------------------------------------------------------------
+  # FastAPI backend
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: frs-backend:local
+    container_name: frs-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # The password is taken from the repository root `.env` file.
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER:-frs}:${POSTGRES_PASSWORD:-CHANGE_ME}@postgres:5432/${POSTGRES_DB:-financial_research}"
+      APP_NAME: "${APP_NAME:-Multi-Agent Financial Research System}"
+      APP_ENV: "${APP_ENV:-development}"
+      APP_VERSION: "${APP_VERSION:-0.1.0}"
+      DEBUG: "${DEBUG:-false}"
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+      LOG_FORMAT: "${LOG_FORMAT:-json}"
+      # The storage root is a named volume that is shared with the host.
+      STORAGE_PROVIDER: "local"
+      STORAGE_ROOT: "/var/lib/frs/storage"
+      MAX_UPLOAD_SIZE_BYTES: "${MAX_UPLOAD_SIZE_BYTES:-52428800}"
+      MAX_PDF_PAGES: "${MAX_PDF_PAGES:-2000}"
+      MIN_TEXT_CHARS_PER_PAGE: "${MIN_TEXT_CHARS_PER_PAGE:-40}"
+      EMBEDDING_PROVIDER: "${EMBEDDING_PROVIDER:-fastembed}"
+      EMBEDDING_MODEL: "${EMBEDDING_MODEL:-BAAI/bge-small-en-v1.5}"
+      EMBEDDING_DIMENSION: "${EMBEDDING_DIMENSION:-384}"
+      EMBEDDING_BATCH_SIZE: "${EMBEDDING_BATCH_SIZE:-32}"
+      EMBEDDING_MAX_RETRIES: "${EMBEDDING_MAX_RETRIES:-3}"
+      EMBEDDING_TIMEOUT_SECONDS: "${EMBEDDING_TIMEOUT_SECONDS:-60.0}"
+      CHUNK_SIZE_TOKENS: "${CHUNK_SIZE_TOKENS:-512}"
+      CHUNK_OVERLAP_TOKENS: "${CHUNK_OVERLAP_TOKENS:-64}"
+      CHUNK_MIN_TOKENS: "${CHUNK_MIN_TOKENS:-32}"
+      CHUNK_MAX_TOKENS: "${CHUNK_MAX_TOKENS:-1024}"
+      RETRIEVAL_TOP_K: "${RETRIEVAL_TOP_K:-10}"
+      RETRIEVAL_MAX_TOP_K: "${RETRIEVAL_MAX_TOP_K:-100}"
+      PROCESSING_INLINE: "${PROCESSING_INLINE:-false}"
+      TABLE_EXTRACTION_ENABLED: "${TABLE_EXTRACTION_ENABLED:-true}"
+      OCR_ENABLED: "${OCR_ENABLED:-false}"
+      OCR_LANGUAGE: "${OCR_LANGUAGE:-eng}"
+      SEED_MANIFEST_PATH: "/app/seed_manifest.json"
+      SEED_DOCUMENTS_DIR: "/app/seed_documents"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - frs_storage:/var/lib/frs/storage
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=5).status == 200 else 1)"
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # ---------------------------------------------------------------------------
+  # React SPA served by nginx
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        # The SPA calls the API through the nginx reverse proxy, therefore
+        # the base URL is a relative path.
+        VITE_API_BASE_URL: "${VITE_API_BASE_URL:-/api/v1}"
+    image: frs-frontend:local
+    container_name: frs-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
+volumes:
+  # The PostgreSQL data directory of the cluster.
+  frs_pgdata:
+  # The uploaded documents (the `data/storage` tree of the repository).
+  frs_storage:
