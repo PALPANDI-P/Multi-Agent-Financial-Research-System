@@ -1,0 +1,71 @@
+﻿# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.venv/
+venv/
+ENV/
+env/
+.python-version
+
+# ---- Build output ----
+build/
+dist/
+wheels/
+*.egg
+
+# ---- Environment / secrets ----
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# ---- Local databases / data ----
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/documents/
+data/seed_manifest.local.json
+
+# ---- Node ----
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# ---- Test / lint / type-check caches ----
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# ---- Logs ----
+*.log
+
+# ---- Local runtime state ----
+storage/
+var/
+
+# ---- Editors / IDEs ----
+.idea/
+.vscode/
+
+# ---- Wave 0 local installs (these live OUTSIDE the repo; guard anyway) ----
+mamba/
+micromamba/
+pgdata/
+**/mamba/
+**/micromamba/
+**/pgdata/
+fastembed_cache/
+
+# ---- Keep the Kilo agent configuration tracked ----
+!.kilo/
