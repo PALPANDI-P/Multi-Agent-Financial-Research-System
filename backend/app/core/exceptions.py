@@ -11,6 +11,11 @@ carries three stable pieces of metadata:
     A human readable description.  Messages may change between releases.
 ``details``
     A JSON-serialisable mapping with additional diagnostic context.
+``error_code``
+    An optional, finer grained diagnosis (for example ``"ocr_unavailable"``)
+    that is distinct from the stable envelope ``code``.  It is used by the
+    job records and is mirrored into :attr:`details` so that it can never be
+    lost when the error is serialised.
 
 Each exception also exposes an ``http_status`` so the API layer (Wave 5) can
 translate a domain error into an HTTP response without a lookup table.
@@ -53,6 +58,7 @@ class AppError(Exception):
 
     default_code: str = "app_error"
     default_http_status: int = 500
+    default_error_code: str | None = None
 
     def __init__(
         self,
@@ -61,6 +67,7 @@ class AppError(Exception):
         code: str | None = None,
         details: dict[str, Any] | None = None,
         http_status: int | None = None,
+        error_code: str | None = None,
     ) -> None:
         super().__init__(message)
         self.message = message
@@ -69,10 +76,22 @@ class AppError(Exception):
         self.http_status = (
             http_status if http_status is not None else self.default_http_status
         )
+        self.error_code: str | None = (
+            error_code if error_code is not None else self.default_error_code
+        )
+        if self.error_code is not None:
+            self.details.setdefault("error_code", self.error_code)
 
     def to_dict(self) -> dict[str, Any]:
         """Return the JSON-serialisable representation used by API envelopes."""
-        return {"code": self.code, "message": self.message, "details": self.details}
+        payload: dict[str, Any] = {
+            "code": self.code,
+            "message": self.message,
+            "details": self.details,
+        }
+        if self.error_code is not None:
+            payload["error_code"] = self.error_code
+        return payload
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}(code={self.code!r}, message={self.message!r})"
@@ -149,26 +168,13 @@ class ProcessingError(AppError):
     from the stable API envelope code (``processing_error``) and is surfaced
     through :attr:`details` so that it is never lost when the error is
     serialised.
+
+    ``error_code`` is a first class attribute of :class:`AppError`.  This
+    subclass only supplies the default ``"processing_error"`` so that a job
+    failure always records an actionable code, while an explicit
+    ``error_code=...`` still overrides it.
     """
 
     default_code = "processing_error"
     default_http_status = 500
-
-    def __init__(
-        self,
-        message: str,
-        *,
-        code: str | None = None,
-        details: dict[str, Any] | None = None,
-        http_status: int | None = None,
-        error_code: str | None = None,
-    ) -> None:
-        super().__init__(
-            message,
-            code=code,
-            details=details,
-            http_status=http_status,
-        )
-        self.error_code = error_code
-        if error_code is not None:
-            self.details.setdefault("error_code", error_code)
+    default_error_code = "processing_error"
