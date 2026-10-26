@@ -208,6 +208,32 @@ class DocumentService:
             session.close()
 
     @staticmethod
+    def _require_workspace(
+        repository: WorkspaceRepository,
+        workspace_id: UUID,
+        owner_id: UUID | None,
+    ) -> None:
+        """Make sure the workspace *workspace_id* exists and may be reached.
+
+        Raises
+        ------
+        app.core.exceptions.NotFoundError
+            If the workspace does not exist or the user may not reach it.
+        """
+        if repository.get(workspace_id) is None:
+            raise NotFoundError(
+                f"the workspace {workspace_id} does not exist",
+                details={"workspace_id": str(workspace_id)},
+            )
+        if owner_id is not None and not repository.can_access_workspace(
+            workspace_id, owner_id
+        ):
+            raise NotFoundError(
+                f"the workspace {workspace_id} does not exist",
+                details={"workspace_id": str(workspace_id)},
+            )
+
+    @staticmethod
     def _not_found(document_id: UUID) -> NotFoundError:
         """Return the error that reports a missing document."""
         return NotFoundError(
@@ -267,6 +293,7 @@ class DocumentService:
         data: bytes,
         declared_mime_type: str | None = None,
         metadata: DocumentMetadata | None = None,
+        owner_id: UUID | None = None,
     ) -> DocumentRegistration:
         """Register an upload and return the outcome.
 
@@ -287,12 +314,17 @@ class DocumentService:
         7. when the database write fails, the stored file is removed again
            (compensating action) and the error is re-raised.
 
+        ``owner_id`` restricts the upload to the workspaces the user owns
+        or is a member of.  A workspace the user may not reach is reported
+        as :class:`~app.core.exceptions.NotFoundError` - the existence of a
+        workspace of somebody else is never disclosed.
+
         Raises
         ------
         app.core.exceptions.ValidationError
             If the upload does not pass the validation.
         app.core.exceptions.NotFoundError
-            If the workspace does not exist.
+            If the workspace does not exist or the user may not reach it.
         """
         validation = self._validator.validate(
             filename=filename,
@@ -312,6 +344,9 @@ class DocumentService:
         content_hash = hashlib.sha256(bytes(data)).hexdigest()
 
         with self._session_scope() as session:
+            workspace_repository = WorkspaceRepository(session)
+            self._require_workspace(workspace_repository, workspace_id, owner_id)
+
             document_repository = DocumentRepository(session)
             duplicate = document_repository.get_by_content_hash(
                 workspace_id, content_hash
@@ -323,13 +358,6 @@ class DocumentService:
                     processing_stage=duplicate.processing_stage,
                     content_hash=duplicate.content_hash,
                     duplicate=True,
-                )
-
-            workspace_repository = WorkspaceRepository(session)
-            if workspace_repository.get(workspace_id) is None:
-                raise NotFoundError(
-                    f"the workspace {workspace_id} does not exist",
-                    details={"workspace_id": str(workspace_id)},
                 )
 
         extension = Path(filename or "").suffix.lower() or DEFAULT_EXTENSION
@@ -385,21 +413,22 @@ class DocumentService:
         status: ProcessingStatus | str | None = None,
         document_type: str | None = None,
         company_name: str | None = None,
+        owner_id: UUID | None = None,
     ) -> tuple[list[DocumentSummary], int]:
         """Return a page of documents of a workspace and the **total** count.
+
+        ``owner_id`` restricts the answer to the workspaces the user owns
+        or is a member of.  A workspace the user may not reach is reported
+        as :class:`~app.core.exceptions.NotFoundError`.
 
         Raises
         ------
         app.core.exceptions.NotFoundError
-            If the workspace does not exist.
+            If the workspace does not exist or the user may not reach it.
         """
         with self._session_scope() as session:
             workspace_repository = WorkspaceRepository(session)
-            if workspace_repository.get(workspace_id) is None:
-                raise NotFoundError(
-                    f"the workspace {workspace_id} does not exist",
-                    details={"workspace_id": str(workspace_id)},
-                )
+            self._require_workspace(workspace_repository, workspace_id, owner_id)
             document_repository = DocumentRepository(session)
             chunk_repository = ChunkRepository(session)
             page, total = document_repository.list_by_workspace(
@@ -409,6 +438,7 @@ class DocumentService:
                 status=status,
                 document_type=document_type,
                 company_name=company_name,
+                owner_id=owner_id,
             )
             counts = chunk_repository.count_by_documents(
                 [document.id for document in page]
@@ -419,18 +449,28 @@ class DocumentService:
             ]
             return summaries, total
 
-    def get_document(self, document_id: UUID) -> DocumentSummary:
+    def get_document(
+        self,
+        document_id: UUID,
+        *,
+        owner_id: UUID | None = None,
+    ) -> DocumentSummary:
         """Return the document *document_id*.
+
+        ``owner_id`` restricts the answer to the documents of the
+        workspaces the user owns or is a member of.  A document of a
+        workspace the user may not reach is reported as
+        :class:`~app.core.exceptions.NotFoundError`.
 
         Raises
         ------
         app.core.exceptions.NotFoundError
-            If the document does not exist.
+            If the document does not exist or the user may not reach it.
         """
         with self._session_scope() as session:
             document_repository = DocumentRepository(session)
             chunk_repository = ChunkRepository(session)
-            document = document_repository.get(document_id)
+            document = document_repository.get(document_id, owner_id=owner_id)
             if document is None:
                 raise self._not_found(document_id)
             chunk_count = chunk_repository.count_by_document(document_id)
@@ -462,7 +502,12 @@ class DocumentService:
     # ------------------------------------------------------------------
     # mutations
     # ------------------------------------------------------------------
-    def delete_document(self, document_id: UUID) -> None:
+    def delete_document(
+        self,
+        document_id: UUID,
+        *,
+        owner_id: UUID | None = None,
+    ) -> None:
         """Delete the document *document_id* and the file that belongs to it.
 
         The database row is deleted and committed first - the cascade of the
@@ -470,21 +515,29 @@ class DocumentService:
         is removed afterwards.  A failure to remove the file is logged and
         never raised.
 
+        ``owner_id`` restricts the deletion to the documents of the
+        workspaces the user owns or is a member of.
+
         Raises
         ------
         app.core.exceptions.NotFoundError
-            If the document does not exist.
+            If the document does not exist or the user may not reach it.
         """
         with self._session_scope() as session:
             document_repository = DocumentRepository(session)
-            document = document_repository.get(document_id)
+            document = document_repository.get(document_id, owner_id=owner_id)
             if document is None:
                 raise self._not_found(document_id)
             storage_key = document.storage_key
             document_repository.delete(document_id)
         self._remove_file(storage_key)
 
-    def retry_document(self, document_id: UUID) -> JobSummary:
+    def retry_document(
+        self,
+        document_id: UUID,
+        *,
+        owner_id: UUID | None = None,
+    ) -> JobSummary:
         """Queue a new processing attempt for the document *document_id*.
 
         A **new** job row is created (the attempt counter of the new job
@@ -492,10 +545,13 @@ class DocumentService:
         document is **not** processed here: running the pipeline is the job
         of the job runner.
 
+        ``owner_id`` restricts the retry to the documents of the workspaces
+        the user owns or is a member of.
+
         Raises
         ------
         app.core.exceptions.NotFoundError
-            If the document does not exist.
+            If the document does not exist or the user may not reach it.
         app.core.exceptions.ConflictError
             If the document is not in the ``failed`` state.
         """
@@ -503,7 +559,7 @@ class DocumentService:
             document_repository = DocumentRepository(session)
             job_repository = ProcessingJobRepository(session)
 
-            document = document_repository.get(document_id)
+            document = document_repository.get(document_id, owner_id=owner_id)
             if document is None:
                 raise self._not_found(document_id)
             current_status = _status_value(document.processing_status)

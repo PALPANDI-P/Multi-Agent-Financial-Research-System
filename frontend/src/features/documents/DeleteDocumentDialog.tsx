@@ -75,7 +75,7 @@ export function DeleteDocumentDialog({
           {error.message}
         </Alert>
       ) : null}
-      <p className="text-sm text-ink-muted">
+      <p className="text-small text-ink-muted">
         You are about to remove{' '}
         <span className="font-semibold text-ink">
           {document?.original_filename ?? 'this document'}

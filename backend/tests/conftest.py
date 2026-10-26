@@ -25,10 +25,12 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import Settings
 from app.core.storage import LocalStorage
+from app.services.auth_service import AuthService
 
 __all__ = [
     "TEST_DATABASE_URL",
     "TRUNCATE_TABLES",
+    "auth_service",
     "clean_database",
     "db_session",
     "engine",
@@ -43,11 +45,16 @@ TEST_DATABASE_URL: str = os.getenv("TEST_DATABASE_URL") or (
 )
 
 #: Tables that are emptied before and after every integration test.
+#: The order follows the foreign keys; ``CASCADE`` takes care of the tables
+#: that are not listed.
 TRUNCATE_TABLES: tuple[str, ...] = (
     "document_chunks",
     "processing_jobs",
     "documents",
+    "workspace_members",
     "workspaces",
+    "auth_sessions",
+    "users",
 )
 
 
@@ -108,6 +115,15 @@ def settings(tmp_path: Path) -> Settings:
 def tmp_storage(tmp_path: Path) -> LocalStorage:
     """Return a local storage backend below *tmp_path*."""
     return LocalStorage(tmp_path / "storage")
+
+
+@pytest.fixture
+def auth_service(
+    session_factory: sessionmaker[Session],
+    settings: Settings,
+) -> AuthService:
+    """Return the authentication service of the test run."""
+    return AuthService(session_factory, settings=settings)
 
 
 @pytest.fixture(autouse=True)

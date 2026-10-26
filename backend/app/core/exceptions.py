@@ -27,6 +27,7 @@ from typing import Any
 
 __all__ = [
     "AppError",
+    "AuthenticationError",
     "ChunkingError",
     "ConfigurationError",
     "ConflictError",
@@ -109,6 +110,25 @@ class ValidationError(AppError):
 
     default_code = "validation_error"
     default_http_status = 422
+
+
+class AuthenticationError(AppError):
+    """Raised when a request could not be authenticated.
+
+    The error carries the stable code ``invalid_credentials`` and the HTTP
+    status ``401``.  Its message is **always** generic: it never tells the
+    client whether an account exists, whether it is active or whether the
+    password or the session was the wrong one.  A login attempt with an
+    unknown e-mail address and a login attempt with a wrong password
+    therefore produce the very same answer, which makes the endpoint
+    immune to user enumeration.
+
+    The details of the failure are for the log, not for the client: the
+    ``details`` mapping of this exception stays empty in the public API.
+    """
+
+    default_code = "invalid_credentials"
+    default_http_status = 401
 
 
 class NotFoundError(AppError):

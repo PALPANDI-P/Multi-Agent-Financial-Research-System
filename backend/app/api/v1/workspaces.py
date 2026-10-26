@@ -12,7 +12,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Response, status
 
-from app.api.deps import get_workspace_service
+from app.api.deps import CurrentUserDep, get_workspace_service, owner_scope
 from app.schemas.workspace import (
     WorkspaceCreate,
     WorkspaceListResponse,
@@ -38,11 +38,16 @@ MAX_PAGE_SIZE = 100
 def create_workspace(
     payload: WorkspaceCreate,
     service: Annotated[WorkspaceService, Depends(get_workspace_service)],
+    current_user: CurrentUserDep,
 ) -> WorkspaceRead:
-    """Create a workspace and return it."""
+    """Create a workspace and return it.
+
+    The workspace belongs to the user that created it.
+    """
     summary = service.create_workspace(
         name=payload.name,
         description=payload.description,
+        owner_id=owner_scope(current_user),
     )
     return WorkspaceRead.model_validate(summary)
 
@@ -54,15 +59,20 @@ def create_workspace(
 )
 def list_workspaces(
     service: Annotated[WorkspaceService, Depends(get_workspace_service)],
+    current_user: CurrentUserDep,
     limit: int = Query(default=20, ge=1, le=MAX_PAGE_SIZE),
     offset: int = Query(default=0, ge=0),
     name: str | None = Query(default=None, max_length=255),
 ) -> WorkspaceListResponse:
-    """Return a page of workspaces and the total number of workspaces."""
+    """Return a page of workspaces and the total number of workspaces.
+
+    The page only carries the workspaces the user owns or is a member of.
+    """
     summaries, total = service.list_workspaces(
         limit=limit,
         offset=offset,
         name_contains=name,
+        owner_id=owner_scope(current_user),
     )
     return WorkspaceListResponse(
         items=[WorkspaceRead.model_validate(summary) for summary in summaries],
@@ -80,9 +90,14 @@ def list_workspaces(
 def get_workspace(
     workspace_id: UUID,
     service: Annotated[WorkspaceService, Depends(get_workspace_service)],
+    current_user: CurrentUserDep,
 ) -> WorkspaceRead:
-    """Return the workspace *workspace_id*."""
-    summary = service.get_workspace(workspace_id)
+    """Return the workspace *workspace_id*.
+
+    A workspace the user may not reach is answered with ``404``: the
+    existence of a workspace of somebody else is never disclosed.
+    """
+    summary = service.get_workspace(workspace_id, owner_id=owner_scope(current_user))
     return WorkspaceRead.model_validate(summary)
 
 
@@ -95,15 +110,18 @@ def update_workspace(
     workspace_id: UUID,
     payload: WorkspaceUpdate,
     service: Annotated[WorkspaceService, Depends(get_workspace_service)],
+    current_user: CurrentUserDep,
 ) -> WorkspaceRead:
     """Update the workspace *workspace_id*.
 
     Only the fields that the client actually sent are written: an omitted
     field keeps its value, an explicit ``null`` clears the description.
+    A workspace the user may not reach is answered with ``404``.
     """
     changes = payload.model_dump(exclude_unset=True)
     summary = service.update_workspace(
         workspace_id,
+        owner_id=owner_scope(current_user),
         **changes,
     )
     return WorkspaceRead.model_validate(summary)
@@ -118,7 +136,11 @@ def update_workspace(
 def delete_workspace(
     workspace_id: UUID,
     service: Annotated[WorkspaceService, Depends(get_workspace_service)],
+    current_user: CurrentUserDep,
 ) -> Response:
-    """Delete the workspace *workspace_id* and every document it owns."""
-    service.delete_workspace(workspace_id)
+    """Delete the workspace *workspace_id* and every document it owns.
+
+    A workspace the user may not reach is answered with ``404``.
+    """
+    service.delete_workspace(workspace_id, owner_id=owner_scope(current_user))
     return Response(status_code=status.HTTP_204_NO_CONTENT)

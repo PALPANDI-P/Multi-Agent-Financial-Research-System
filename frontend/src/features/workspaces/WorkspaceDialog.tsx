@@ -116,7 +116,7 @@ export function WorkspaceDialog({
         id="workspace-dialog-form"
         onSubmit={handleSubmit}
         noValidate
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-5"
       >
         {submitError ? (
           <Alert

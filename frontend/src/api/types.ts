@@ -139,3 +139,50 @@ export const PROCESSING_STATUSES = [
 ] as const
 
 export type ProcessingStatus = (typeof PROCESSING_STATUSES)[number]
+
+/* ---------------------------------------------------------------------------
+ * Authentication
+ *
+ * Mirrors of the frozen `/api/v1/auth` contract of the backend.
+ * ------------------------------------------------------------------------- */
+
+export type UserRole = 'analyst' | 'researcher' | 'administrator'
+
+export interface AuthUser {
+  id: string
+  email: string
+  full_name: string
+  role: UserRole
+  scenario_key: string | null
+  created_at?: string
+  last_login_at?: string | null
+}
+
+export interface LoginResponse {
+  user: AuthUser
+  expires_at: string
+}
+
+export interface AuthScenario {
+  key: string
+  title: string
+  tagline: string
+  description: string
+  focus_areas: string[]
+  suggested_queries: string[]
+  demo_email: string | null
+  demo_password: string | null
+}
+
+export interface AuthScenariosResponse {
+  scenarios: AuthScenario[]
+}
+
+export interface RegisterPayload {
+  email: string
+  full_name: string
+  password: string
+}
+
+/** The registration endpoint answers with the created user. */
+export type RegisterResponse = AuthUser

@@ -2,18 +2,20 @@ import type { BadgeTone } from '../../components/Badge'
 
 /**
  * Maps the raw `processing_status` string emitted by the API to a badge tone.
- * The raw status text is always rendered next to the colour, so the badge is
- * never colour-only.
+ *
+ * Every one of the eight states owns a distinguishable colour, and the raw
+ * status text is always rendered next to it, so the badge is never
+ * colour-only.
  */
 const STATUS_TONES: Record<string, BadgeTone> = {
-  queued: 'neutral',
-  validating: 'info',
-  extracting: 'info',
-  chunking: 'info',
-  embedding: 'info',
-  indexing: 'info',
-  completed: 'success',
-  failed: 'danger',
+  queued: 'queued',
+  validating: 'validating',
+  extracting: 'extracting',
+  chunking: 'chunking',
+  embedding: 'embedding',
+  indexing: 'indexing',
+  completed: 'completed',
+  failed: 'failed',
 }
 
 export function statusTone(status: string): BadgeTone {

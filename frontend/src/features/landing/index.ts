@@ -1,0 +1,6 @@
+export { CapabilitiesSection } from './CapabilitiesSection'
+export { HeroSection } from './HeroSection'
+export type { HeroSectionProps } from './HeroSection'
+export { PipelineSection } from './PipelineSection'
+export { ScopeSection } from './ScopeSection'
+export { ScenariosSection } from './ScenariosSection'

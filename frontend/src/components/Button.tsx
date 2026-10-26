@@ -16,17 +16,18 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
-    'bg-brand-600 text-white shadow-sm hover:bg-brand-700 disabled:hover:bg-brand-600',
+    'bg-brand-solid text-on-accent shadow-[0_1px_2px_rgb(0_0_0/0.10)] hover:bg-brand-solid-hover',
   secondary:
-    'bg-surface text-ink border border-line-strong hover:bg-surface-muted disabled:hover:bg-surface',
-  ghost: 'bg-transparent text-ink-muted hover:bg-surface-muted hover:text-ink',
-  danger: 'bg-danger-600 text-white shadow-sm hover:bg-danger-700 disabled:hover:bg-danger-600',
+    'border border-line-strong bg-surface text-ink hover:border-line-strong hover:bg-surface-muted',
+  ghost: 'text-ink-muted hover:bg-surface-muted hover:text-ink',
+  danger:
+    'bg-danger-solid text-white shadow-[0_1px_2px_rgb(0_0_0/0.10)] hover:bg-danger-solid-hover',
 }
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-sm',
-  md: 'h-10 px-4 text-sm',
-  lg: 'h-11 px-5 text-base',
+  sm: 'h-8 px-3 text-small',
+  md: 'h-10 px-4 text-small',
+  lg: 'h-11 px-5 text-body',
 }
 
 export function Button({
@@ -48,9 +49,9 @@ export function Button({
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-control font-medium transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
-        'disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex items-center justify-center gap-2 rounded-control font-semibold',
+        'transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out-soft',
+        'active:translate-y-px disabled:pointer-events-none disabled:opacity-55',
         VARIANT_CLASSES[variant],
         SIZE_CLASSES[size],
         className,

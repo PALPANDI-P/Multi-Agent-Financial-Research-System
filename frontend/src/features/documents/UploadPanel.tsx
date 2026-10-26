@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { describeError } from '../../api/client'
 import type { DocumentUploadResponse } from '../../api/types'
 import { Alert, Button, Dropzone, Input } from '../../components'
+import { CheckIcon, FileTextIcon } from '../../components/icons'
 import { useUploadDocument } from '../../hooks/useDocuments'
 
 export interface UploadPanelProps {
@@ -104,13 +105,13 @@ export function UploadPanel({ workspaceId }: UploadPanelProps) {
   }
 
   const isPending = upload.isPending
-  const progress = upload.progress
+  const progress = upload.progress ?? 0
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
       <Dropzone
         id="document-file"
-        label="Upload a research document"
+        label="Drop the filing here"
         hint="The file is sent to the ingestion API. Accepted formats are validated server-side."
         error={errors.file ?? null}
         disabled={isPending}
@@ -121,94 +122,120 @@ export function UploadPanel({ workspaceId }: UploadPanelProps) {
       />
 
       {file ? (
-        <div className="rounded-control border border-line bg-surface-muted px-3 py-2 text-sm">
-          <span className="font-medium text-ink">{file.name}</span>
-          <span className="ml-2 text-xs text-ink-subtle">
-            {file.type || 'unknown type'} · {(file.size / 1024).toFixed(1)} KB
+        <div className="flex items-center gap-3 rounded-card border border-line bg-surface-muted/60 px-4 py-3">
+          <span
+            aria-hidden="true"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-control border border-line bg-surface text-brand-700"
+          >
+            <FileTextIcon size={17} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-small font-medium text-ink">{file.name}</span>
+            <span className="mt-0.5 block font-mono text-caption text-ink-subtle">
+              {file.type || 'unknown type'} · {(file.size / 1024).toFixed(1)} KB
+            </span>
+          </span>
+          <span
+            aria-hidden="true"
+            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-pill bg-success-50 text-success-700"
+          >
+            <CheckIcon size={13} />
           </span>
         </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Input
-          label="Company name"
-          id="upload-company-name"
-          value={companyName}
-          maxLength={255}
-          onChange={(event) => setCompanyName(event.target.value)}
-          error={errors.company_name ?? null}
-          placeholder="Optional"
-        />
-        <Input
-          label="Document title"
-          id="upload-document-title"
-          value={documentTitle}
-          maxLength={512}
-          onChange={(event) => setDocumentTitle(event.target.value)}
-          error={errors.document_title ?? null}
-          placeholder="Optional"
-        />
-      </div>
+      <fieldset className="flex flex-col gap-4 border-0 p-0">
+        <legend className="mb-1 flex items-center gap-2 text-micro font-semibold tracking-[0.12em] text-ink-subtle uppercase">
+          <span aria-hidden="true" className="h-px w-4 bg-line-strong" />
+          Document metadata — optional
+        </legend>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
+        <div className="grid gap-4 sm:grid-cols-2">
           <Input
-            label="Document type"
-            id="upload-document-type"
-            list="upload-document-type-options"
-            value={documentType}
-            maxLength={64}
-            onChange={(event) => setDocumentType(event.target.value)}
-            error={errors.document_type ?? null}
+            label="Company name"
+            id="upload-company-name"
+            value={companyName}
+            maxLength={255}
+            onChange={(event) => setCompanyName(event.target.value)}
+            error={errors.company_name ?? null}
             placeholder="Optional"
           />
-          <datalist id="upload-document-type-options">
-            {DOCUMENT_TYPE_SUGGESTIONS.map((suggestion) => (
-              <option key={suggestion} value={suggestion} />
-            ))}
-          </datalist>
+          <Input
+            label="Document title"
+            id="upload-document-title"
+            value={documentTitle}
+            maxLength={512}
+            onChange={(event) => setDocumentTitle(event.target.value)}
+            error={errors.document_title ?? null}
+            placeholder="Optional"
+          />
         </div>
-        <Input
-          label="Fiscal period"
-          id="upload-fiscal-period"
-          value={fiscalPeriod}
-          maxLength={64}
-          onChange={(event) => setFiscalPeriod(event.target.value)}
-          error={errors.fiscal_period ?? null}
-          placeholder="Optional, e.g. FY2024"
-        />
-      </div>
 
-      <Input
-        label="Source URL"
-        id="upload-source-url"
-        type="url"
-        value={sourceUrl}
-        onChange={(event) => setSourceUrl(event.target.value)}
-        error={errors.source_url ?? null}
-        placeholder="Optional, e.g. https://example.com/filing"
-        hint="Where the document was originally published."
-      />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Input
+              label="Document type"
+              id="upload-document-type"
+              list="upload-document-type-options"
+              value={documentType}
+              maxLength={64}
+              onChange={(event) => setDocumentType(event.target.value)}
+              error={errors.document_type ?? null}
+              placeholder="Optional"
+            />
+            <datalist id="upload-document-type-options">
+              {DOCUMENT_TYPE_SUGGESTIONS.map((suggestion) => (
+                <option key={suggestion} value={suggestion} />
+              ))}
+            </datalist>
+          </div>
+          <Input
+            label="Fiscal period"
+            id="upload-fiscal-period"
+            value={fiscalPeriod}
+            maxLength={64}
+            onChange={(event) => setFiscalPeriod(event.target.value)}
+            error={errors.fiscal_period ?? null}
+            placeholder="Optional, e.g. FY2024"
+          />
+        </div>
+
+        <Input
+          label="Source URL"
+          id="upload-source-url"
+          type="url"
+          value={sourceUrl}
+          onChange={(event) => setSourceUrl(event.target.value)}
+          error={errors.source_url ?? null}
+          placeholder="Optional, e.g. https://example.com/filing"
+          hint="Where the document was originally published."
+        />
+      </fieldset>
 
       {isPending ? (
-        <div className="rounded-control border border-line bg-surface-muted px-3 py-2">
-          <div className="flex items-center justify-between text-sm text-ink-muted">
-            <span>Uploading…</span>
-            <span aria-live="polite">{progress ?? 0}%</span>
+        <div className="rounded-card border border-line bg-surface px-4 py-4">
+          <div className="flex items-baseline justify-between gap-4 text-small">
+            <span className="font-medium text-ink">Uploading the document…</span>
+            <span aria-live="polite" className="font-mono text-caption text-ink tabular-nums">
+              {progress}%
+            </span>
           </div>
           <div
             role="progressbar"
-            aria-valuenow={progress ?? 0}
+            aria-valuenow={progress}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label="Upload progress"
-            className="mt-2 h-2 w-full overflow-hidden rounded-pill bg-line"
+            className="mt-3 h-1.5 w-full overflow-hidden rounded-pill bg-line-faint"
           >
             <div
-              className="h-full rounded-pill bg-brand-600 transition-[width]"
-              style={{ width: `${progress ?? 0}%` }}
+              className="h-full rounded-pill bg-brand-600 shadow-[inset_0_1px_0_rgb(255_255_255/0.25)] transition-[width] duration-200 ease-out-soft"
+              style={{ width: `${progress}%` }}
             />
           </div>
+          {file ? (
+            <p className="mt-2.5 truncate font-mono text-micro text-ink-subtle">{file.name}</p>
+          ) : null}
         </div>
       ) : null}
 
@@ -235,14 +262,16 @@ export function UploadPanel({ workspaceId }: UploadPanelProps) {
               </>
             ) : null}
           </p>
-          <p className="mt-1 text-xs">
-            Document ID: <span className="font-mono">{result.document_id}</span> · Content hash:{' '}
-            <span className="font-mono">{result.content_hash}</span>
+          <p className="mt-1.5 font-mono text-caption">
+            document <span className="text-ink-muted">{result.document_id}</span>
+          </p>
+          <p className="mt-0.5 font-mono text-caption break-all">
+            sha256 <span className="text-ink-muted">{result.content_hash}</span>
           </p>
         </Alert>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
         <Button type="submit" loading={isPending} loadingLabel="Uploading…">
           Upload document
         </Button>
@@ -262,4 +291,3 @@ export function UploadPanel({ workspaceId }: UploadPanelProps) {
     </form>
   )
 }
-

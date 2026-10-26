@@ -3,16 +3,26 @@ import type { ApiErrorBody, ApiErrorEnvelope } from './types'
 /**
  * Base URL for every API call.
  *
- * `VITE_API_BASE_URL` overrides it. The documented default is the absolute
- * backend URL; setting it to `/api/v1` makes the browser talk to the Vite dev
- * proxy instead (see `vite.config.ts`), which avoids CORS in development.
+ * The default is the **relative** `/api/v1`: the browser then talks to the
+ * Vite dev proxy (or to the reverse proxy of the deployment), which keeps the
+ * request same-origin.  That matters for the session: the backend sets the
+ * `frs_session` cookie with `HttpOnly; SameSite=Lax`, and a `SameSite=Lax`
+ * cookie is *not* sent with a cross-origin request - so an absolute base URL
+ * would authenticate the API documentation and curl, but not the browser.
+ *
+ * `VITE_API_BASE_URL` overrides the default.  Set it to an absolute URL such
+ * as `http://localhost:8000/api/v1` only for the API documentation use case
+ * and make sure the backend allows the origin in `CORS_ORIGINS`.
  */
 const RAW_BASE_URL = (
   (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
 ).trim()
 
 export const API_BASE_URL: string =
-  RAW_BASE_URL.length > 0 ? RAW_BASE_URL.replace(/\/+$/, '') : 'http://localhost:8000/api/v1'
+  RAW_BASE_URL.length > 0 ? RAW_BASE_URL.replace(/\/+$/, '') : '/api/v1'
+
+/** True when the API is called through the same origin (the proxy mode). */
+export const API_IS_SAME_ORIGIN: boolean = !/^https?:\/\//i.test(API_BASE_URL)
 
 export type QueryValue = string | number | boolean | null | undefined
 
@@ -50,6 +60,42 @@ export class ApiError extends Error {
     this.details = params.details
     this.requestId = params.requestId
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * Session handling
+ *
+ * Every response of the API outside of `/auth` needs the session cookie.  A
+ * `401` therefore means "the session is gone" and the application has to react
+ * to it: the auth provider subscribes to the notification and clears the
+ * session, which lets the protected routes send the user back to the sign-in
+ * page instead of showing an empty screen.
+ * ------------------------------------------------------------------------- */
+
+type UnauthorizedListener = () => void
+
+const unauthorizedListeners = new Set<UnauthorizedListener>()
+
+/** Subscribes to the "the session is gone" notification. Returns an unsubscribe. */
+export function onUnauthorized(listener: UnauthorizedListener): () => void {
+  unauthorizedListeners.add(listener)
+  return () => {
+    unauthorizedListeners.delete(listener)
+  }
+}
+
+function notifyUnauthorized(): void {
+  for (const listener of unauthorizedListeners) {
+    try {
+      listener()
+    } catch {
+      // A broken listener must never break the request that triggered it.
+    }
+  }
+}
+
+function isAuthPath(path: string): boolean {
+  return path === '/auth' || path.startsWith('/auth/')
 }
 
 function buildUrl(path: string, query?: Record<string, QueryValue>): string {
@@ -132,6 +178,7 @@ async function readErrorResponse(response: Response): Promise<ApiError> {
  *
  * - Builds the URL from `API_BASE_URL` + path + query string.
  * - Serialises JSON bodies, sets `Accept: application/json`.
+ * - Always sends the session cookie (`credentials: 'include'`).
  * - Supports cancellation through an `AbortSignal`.
  * - Throws {@link ApiError} for any non-2xx response, parsed from the backend
  *   error envelope.
@@ -160,6 +207,9 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
       headers: requestHeaders,
       body: payload,
       signal,
+      // The session lives in an HttpOnly cookie: it has to travel with every
+      // request of the application.
+      credentials: 'include',
     })
   } catch (error) {
     if (isAbortError(error)) throw error
@@ -174,6 +224,9 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   }
 
   if (!response.ok) {
+    if (response.status === 401 && !isAuthPath(path)) {
+      notifyUnauthorized()
+    }
     throw await readErrorResponse(response)
   }
 
@@ -217,6 +270,8 @@ export function uploadFile<T>(
     xhr.open('POST', url, true)
     xhr.responseType = 'text'
     xhr.setRequestHeader('Accept', 'application/json')
+    // Send the session cookie with the upload as well.
+    xhr.withCredentials = true
 
     const abort = () => {
       xhr.abort()
@@ -264,6 +319,10 @@ export function uploadFile<T>(
           )
         }
         return
+      }
+
+      if (status === 401 && !isAuthPath(path)) {
+        notifyUnauthorized()
       }
 
       const parsed = parseErrorBody(status, raw)

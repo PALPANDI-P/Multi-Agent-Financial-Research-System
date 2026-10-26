@@ -40,13 +40,14 @@ from functools import lru_cache
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session
 
 from app.agents.document_agent import DocumentAgent
 from app.agents.job_runner import JobRunner, create_job_runner
 from app.core.config import Settings, get_settings
+from app.core.exceptions import AuthenticationError
 from app.core.storage import StorageBackend, create_storage_backend
 from app.db.session import SessionLocal, create_engine_from_settings
 from app.embeddings.service import EmbeddingService, create_embedding_service
@@ -57,24 +58,35 @@ from app.ingestion.extractors.pdf_text import PyMuPdfTextExtractor
 from app.ingestion.pipeline import IngestionPipeline
 from app.ingestion.validators import FileValidator
 from app.repositories.chunk_repository import ChunkRepository
+from app.repositories.workspace_repository import WorkspaceRepository
+from app.services.auth_service import ANONYMOUS_USER, AuthService, UserSummary
 from app.services.document_service import DocumentService
 from app.services.search_service import SearchService
 from app.services.workspace_service import WorkspaceService
 from app.vectorstore.pgvector_store import PgVectorStore
 
 __all__ = [
+    "AuthServiceDep",
+    "CurrentUserDep",
+    "OptionalUserDep",
     "SettingsDep",
     "clear_dependency_cache",
+    "extract_session_token",
+    "get_auth_service",
+    "get_current_user",
     "get_document_agent",
     "get_document_service",
     "get_embedding_service",
     "get_job_runner",
+    "get_optional_user",
     "get_search_service",
     "get_session_factory",
     "get_settings_dep",
     "get_storage",
     "get_vector_store",
     "get_workspace_service",
+    "owner_scope",
+    "require_session",
 ]
 
 
@@ -221,18 +233,155 @@ def get_document_service(settings: SettingsDep) -> DocumentService:
 
 
 @lru_cache(maxsize=8)
+def _workspace_access_for(key: str) -> Callable[[UUID, UUID], bool]:
+    """Return the callable that answers whether a user may reach a workspace.
+
+    The callable is used by the search service to verify the scope of a
+    search; it owns its session and closes it again.
+    """
+    session_factory = _session_factory_for(key)
+
+    def can_access(workspace_id: UUID, user_id: UUID) -> bool:
+        """Return whether *user_id* may reach the workspace *workspace_id*."""
+        with session_factory() as session:
+            return WorkspaceRepository(session).can_access_workspace(
+                workspace_id, user_id
+            )
+
+    return can_access
+
+
+@lru_cache(maxsize=8)
 def _search_service_for(key: str) -> SearchService:
     """Return the search service of the settings *key*."""
     return SearchService(
         vector_store=_vector_store_for(key),
         embedding_service=_embedding_service_for(key),
         settings=_settings_of(key),
+        workspace_access=_workspace_access_for(key),
     )
 
 
 def get_search_service(settings: SettingsDep) -> SearchService:
     """Return the search service."""
     return _search_service_for(_settings_key(settings))
+
+
+# ---------------------------------------------------------------------------
+# the authentication
+# ---------------------------------------------------------------------------
+@lru_cache(maxsize=8)
+def _auth_service_for(key: str) -> AuthService:
+    """Return the authentication service of the settings *key*."""
+    return AuthService(_session_factory_for(key), settings=_settings_of(key))
+
+
+def get_auth_service(settings: SettingsDep) -> AuthService:
+    """Return the authentication service."""
+    return _auth_service_for(_settings_key(settings))
+
+
+#: The authentication service of the current request.
+AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
+
+
+def extract_session_token(request: Request, settings: Settings) -> str | None:
+    """Return the session token of *request* or ``None``.
+
+    The token is read from the authentication cookie or - as an
+    alternative - from the ``Authorization: Bearer <token>`` header.  The
+    header exists for the clients that cannot use a cookie (a command line
+    client for example).
+    """
+    cookie = request.cookies.get(settings.auth_cookie_name)
+    if cookie:
+        return cookie
+    header = request.headers.get("authorization")
+    if header:
+        scheme, _, value = header.partition(" ")
+        if scheme.strip().lower() == "bearer" and value.strip():
+            return value.strip()
+    return None
+
+
+def get_current_user(
+    request: Request,
+    settings: SettingsDep,
+    service: AuthServiceDep,
+) -> UserSummary:
+    """Return the user of the current request.
+
+    The session token is read from the cookie or from the
+    ``Authorization: Bearer`` header and is resolved by the authentication
+    service.  A request without a valid session is answered with ``401``.
+
+    **The open mode.**  When ``settings.auth_required`` is ``False`` the
+    dependency does **not** raise: it returns the synthetic *anonymous*
+    user instead.  The mode exists so that the API can be run without a
+    login in a trusted local environment; the anonymous user owns nothing
+    and therefore does not restrict the answer either (see
+    :func:`owner_scope`).
+    """
+    token = extract_session_token(request, settings)
+    if token is None:
+        if not settings.auth_required:
+            return ANONYMOUS_USER
+        raise AuthenticationError(
+            "Authentication required.",
+            details={"reason": "missing_session"},
+        )
+    try:
+        return service.resolve_session(token)
+    except AuthenticationError:
+        if not settings.auth_required:
+            return ANONYMOUS_USER
+        raise
+
+
+#: The authenticated user of the current request.
+CurrentUserDep = Annotated[UserSummary, Depends(get_current_user)]
+
+
+def get_optional_user(
+    request: Request,
+    settings: SettingsDep,
+    service: AuthServiceDep,
+) -> UserSummary | None:
+    """Return the user of the current request or ``None``.
+
+    The dependency **never** raises: a request without a valid session is
+    simply a request without a user.
+    """
+    token = extract_session_token(request, settings)
+    if token is None:
+        return None
+    try:
+        return service.resolve_session(token)
+    except AuthenticationError:
+        return None
+
+
+#: The user of the current request, if there is one.
+OptionalUserDep = Annotated[UserSummary | None, Depends(get_optional_user)]
+
+#: The dependency that the protected routers carry.  It is applied on the
+#: **router** (and not on the single routes), therefore a new route of a
+#: protected router can never be forgotten.
+require_session = get_current_user
+
+
+def owner_scope(user: UserSummary | None) -> UUID | None:
+    """Return the owner scope of *user*.
+
+    The scope is the id the services use to restrict their answer to the
+    workspaces the user may reach.  ``None`` means *no filtering at all*:
+    it is the mode the system itself uses (the seed loader for example)
+    and the mode of the open API (``AUTH_REQUIRED=false``), because the
+    synthetic anonymous user owns nothing.
+    """
+    if user is None or user.is_anonymous:
+        return None
+    return user.id
 
 
 # ---------------------------------------------------------------------------
@@ -339,6 +488,7 @@ def clear_dependency_cache() -> None:
         _vector_store_for,
         _document_service_for,
         _search_service_for,
+        _auth_service_for,
         _document_agent_for,
         _job_runner_for,
     ):

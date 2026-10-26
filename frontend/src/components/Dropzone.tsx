@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, KeyboardEvent } from 'react'
 import { cn } from '../lib/cn'
+import { UploadIcon } from './icons'
 
 export interface DropzoneProps {
   /** Visible label text for the drop target. */
@@ -102,30 +103,43 @@ export function Dropzone({
         }}
         onDrop={handleDrop}
         className={cn(
-          'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-card border-2 border-dashed px-4 py-8 text-center transition-colors',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 focus-visible:ring-offset-canvas',
+          'group relative flex cursor-pointer flex-col items-center justify-center gap-3 overflow-hidden',
+          'rounded-panel border border-dashed px-6 py-10 text-center',
+          'transition-[border-color,background-color,transform] duration-200 ease-out-soft',
           isDragging
-            ? 'border-brand-500 bg-brand-50'
-            : 'border-line-strong bg-surface hover:border-brand-500 hover:bg-surface-muted',
+            ? 'scale-[1.005] border-brand-500 bg-brand-50'
+            : 'border-line-strong bg-surface-muted/40 hover:border-brand-400 hover:bg-brand-50/60',
           disabled && 'cursor-not-allowed opacity-60',
-          error && 'border-danger-500',
+          error && 'border-danger-600 bg-danger-50/40',
         )}
       >
-        <svg
-          className="h-7 w-7 text-ink-subtle"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
+        <span
           aria-hidden="true"
+          className={cn(
+            'inline-flex h-12 w-12 items-center justify-center rounded-panel border transition-colors duration-200',
+            isDragging
+              ? 'border-brand-200 bg-brand-100 text-brand-700'
+              : 'border-line bg-surface text-ink-subtle group-hover:border-brand-200 group-hover:text-brand-600',
+          )}
         >
-          <path d="M12 16V4m0 0L8 8m4-4 4 4" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" strokeLinecap="round" />
-        </svg>
-        <span className="text-sm font-medium text-ink">{label}</span>
-        <span className="text-xs text-ink-subtle">
-          Drag and drop a file here, or press Enter to browse.
+          <UploadIcon size={22} />
         </span>
+
+        <span className="space-y-1">
+          <span className="block text-small font-semibold text-ink">{label}</span>
+          <span className="block text-caption text-ink-subtle">
+            Drag a file here, or press <span className="font-mono">Enter</span> to browse.
+          </span>
+        </span>
+
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          style={{
+            backgroundImage:
+              'radial-gradient(60% 60% at 50% 0%, rgb(63 115 97 / 0.06), transparent 70%)',
+          }}
+        />
       </div>
 
       <input
@@ -149,16 +163,15 @@ export function Dropzone({
       </p>
 
       {hint ? (
-        <p id={hintId} className="text-xs text-ink-subtle">
+        <p id={hintId} className="text-caption text-ink-subtle">
           {hint}
         </p>
       ) : null}
       {error ? (
-        <p id={errorId} className="text-xs font-medium text-danger-700">
+        <p id={errorId} className="text-caption font-medium text-danger-700">
           {error}
         </p>
       ) : null}
     </div>
   )
 }
-

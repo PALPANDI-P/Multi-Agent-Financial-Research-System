@@ -5,7 +5,10 @@ import { defineConfig, loadEnv } from 'vite'
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
-  const proxyTarget = env.VITE_DEV_PROXY_TARGET || 'http://localhost:8000'
+  // The environment of the process wins over the .env file, so the proxy can
+  // be pointed at another API (a stub, a tunnel) without touching the repository.
+  const proxyTarget =
+    process.env.VITE_DEV_PROXY_TARGET || env.VITE_DEV_PROXY_TARGET || 'http://localhost:8000'
 
   return {
     plugins: [react(), tailwindcss()],

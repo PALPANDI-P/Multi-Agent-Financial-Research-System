@@ -25,7 +25,7 @@ export function Textarea({
 
   return (
     <div className={cn('flex flex-col gap-1.5', containerClassName)}>
-      <label htmlFor={id} className="text-sm font-medium text-ink">
+      <label htmlFor={id} className="text-small font-medium text-ink">
         {label}
         {required ? (
           <span className="ml-1 text-danger-600" aria-hidden="true">
@@ -40,22 +40,23 @@ export function Textarea({
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
         className={cn(
-          'min-h-24 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-sm text-ink',
+          'min-h-24 w-full rounded-control border border-line-strong bg-surface px-3 py-2.5 text-body text-ink',
+          'transition-[border-color,box-shadow] duration-150 ease-out-soft',
           'placeholder:text-ink-subtle',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:border-brand-600',
+          'focus:border-brand-500 focus:ring-2 focus:ring-brand-500/25 focus:outline-none',
           'disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-ink-subtle',
-          error && 'border-danger-600 focus-visible:ring-danger-600',
+          error && 'border-danger-600 focus:border-danger-600 focus:ring-danger-600/25',
           className,
         )}
         {...rest}
       />
       {hint ? (
-        <p id={hintId} className="text-xs text-ink-subtle">
+        <p id={hintId} className="text-caption text-ink-subtle">
           {hint}
         </p>
       ) : null}
       {error ? (
-        <p id={errorId} className="text-xs font-medium text-danger-700">
+        <p id={errorId} className="text-caption font-medium text-danger-700">
           {error}
         </p>
       ) : null}

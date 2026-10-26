@@ -36,8 +36,9 @@ from app.agents.job_runner import BackgroundThreadJobRunner
 from app.api.deps import get_job_runner
 from app.api.errors import error_response, register_exception_handlers
 from app.api.router import api_router
+from app.api.v1.auth import authentication_error_handler
 from app.core.config import Settings, get_settings, validate_runtime_settings
-from app.core.exceptions import ConfigurationError
+from app.core.exceptions import AuthenticationError, ConfigurationError
 from app.core.logging import bind_context, clear_context, configure_logging, get_logger
 
 __all__ = ["app", "create_app"]
@@ -241,6 +242,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(RequestIdMiddleware)
 
     register_exception_handlers(app)
+    # The authentication error carries a ``WWW-Authenticate`` header; it is
+    # registered separately because the generic handler of the domain errors
+    # does not know about it.
+    app.add_exception_handler(AuthenticationError, authentication_error_handler)
     app.include_router(api_router, prefix="/api/v1")
 
     @app.get("/", tags=["index"], summary="A tiny index of the API")

@@ -20,13 +20,12 @@ export function WorkspaceList({ workspaces, emptyAction }: WorkspaceListProps) {
   }
 
   return (
-    <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <ul className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
       {workspaces.map((workspace) => (
-        <li key={workspace.id}>
+        <li key={workspace.id} className="group">
           <WorkspaceCard workspace={workspace} />
         </li>
       ))}
     </ul>
   )
 }
-

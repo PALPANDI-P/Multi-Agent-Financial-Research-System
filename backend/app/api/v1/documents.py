@@ -23,7 +23,13 @@ from fastapi import APIRouter, Depends, File, Form, Query, Response, UploadFile,
 from pydantic import ValidationError as PydanticValidationError
 
 from app.agents.job_runner import JobRunner
-from app.api.deps import SettingsDep, get_document_service, get_job_runner
+from app.api.deps import (
+    CurrentUserDep,
+    SettingsDep,
+    get_document_service,
+    get_job_runner,
+    owner_scope,
+)
 from app.api.errors import PayloadTooLargeError
 from app.core.exceptions import ValidationError
 from app.schemas.document import (
@@ -114,6 +120,7 @@ async def upload_document(
     settings: SettingsDep,
     service: Annotated[DocumentService, Depends(get_document_service)],
     runner: Annotated[JobRunner, Depends(get_job_runner)],
+    current_user: CurrentUserDep,
     company_name: Annotated[str | None, Form()] = None,
     document_title: Annotated[str | None, Form()] = None,
     document_type: Annotated[str | None, Form()] = None,
@@ -142,12 +149,15 @@ async def upload_document(
         data=payload,
         declared_mime_type=file.content_type,
         metadata=metadata,
+        owner_id=owner_scope(current_user),
     )
 
     if registration.duplicate:
         # The document already exists: it is not processed a second time,
         # the existing document is reported instead.
-        document = service.get_document(registration.document_id)
+        document = service.get_document(
+            registration.document_id, owner_id=owner_scope(current_user)
+        )
         return DocumentUploadResponse(
             document_id=document.id,
             processing_status=document.processing_status,
@@ -157,7 +167,9 @@ async def upload_document(
         )
 
     runner.submit(registration.document_id)
-    document = service.get_document(registration.document_id)
+    document = service.get_document(
+        registration.document_id, owner_id=owner_scope(current_user)
+    )
     return DocumentUploadResponse(
         document_id=document.id,
         processing_status=document.processing_status,
@@ -175,13 +187,17 @@ async def upload_document(
 def list_documents(
     workspace_id: UUID,
     service: Annotated[DocumentService, Depends(get_document_service)],
+    current_user: CurrentUserDep,
     limit: int = Query(default=50, ge=1, le=MAX_PAGE_SIZE),
     offset: int = Query(default=0, ge=0),
     status_filter: Annotated[str | None, Query(alias="status")] = None,
     document_type: str | None = Query(default=None, max_length=64),
     company_name: str | None = Query(default=None, max_length=255),
 ) -> DocumentListResponse:
-    """Return a page of the documents of the workspace *workspace_id*."""
+    """Return a page of the documents of the workspace *workspace_id*.
+
+    A workspace the user may not reach is answered with ``404``.
+    """
     summaries, total = service.list_documents(
         workspace_id,
         limit=limit,
@@ -189,6 +205,7 @@ def list_documents(
         status=status_filter,
         document_type=document_type,
         company_name=company_name,
+        owner_id=owner_scope(current_user),
     )
     return DocumentListResponse(
         items=[DocumentRead.model_validate(summary) for summary in summaries],
@@ -206,9 +223,15 @@ def list_documents(
 def get_document(
     document_id: UUID,
     service: Annotated[DocumentService, Depends(get_document_service)],
+    current_user: CurrentUserDep,
 ) -> DocumentRead:
-    """Return the document *document_id*."""
-    summary = service.get_document(document_id)
+    """Return the document *document_id*.
+
+    A document of a workspace the user may not reach is answered with
+    ``404``: the existence of a document of somebody else is never
+    disclosed.
+    """
+    summary = service.get_document(document_id, owner_id=owner_scope(current_user))
     return DocumentRead.model_validate(summary)
 
 
@@ -222,13 +245,15 @@ def retry_document(
     document_id: UUID,
     service: Annotated[DocumentService, Depends(get_document_service)],
     runner: Annotated[JobRunner, Depends(get_job_runner)],
+    current_user: CurrentUserDep,
 ) -> RetryResponse:
     """Queue a new processing attempt for the document *document_id*.
 
     The document must be in the ``failed`` state, otherwise the request is
-    rejected with ``409``.
+    rejected with ``409``.  A document the user may not reach is answered
+    with ``404``.
     """
-    job = service.retry_document(document_id)
+    job = service.retry_document(document_id, owner_id=owner_scope(current_user))
     runner.submit(document_id)
     return RetryResponse(
         document_id=job.document_id,
@@ -247,7 +272,11 @@ def retry_document(
 def delete_document(
     document_id: UUID,
     service: Annotated[DocumentService, Depends(get_document_service)],
+    current_user: CurrentUserDep,
 ) -> Response:
-    """Delete the document *document_id* and its chunks."""
-    service.delete_document(document_id)
+    """Delete the document *document_id* and its chunks.
+
+    A document the user may not reach is answered with ``404``.
+    """
+    service.delete_document(document_id, owner_id=owner_scope(current_user))
     return Response(status_code=status.HTTP_204_NO_CONTENT)

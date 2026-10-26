@@ -14,12 +14,12 @@ names match :class:`app.schemas.search.SearchResponse` and
 from __future__ import annotations
 
 import time
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from uuid import UUID
 
 from app.core.config import Settings
-from app.core.exceptions import ValidationError
+from app.core.exceptions import NotFoundError, ValidationError
 from app.embeddings.service import EmbeddingService
 from app.vectorstore.base import SearchHit, VectorStore
 
@@ -68,6 +68,7 @@ class SearchService:
         vector_store: VectorStore,
         embedding_service: EmbeddingService,
         settings: Settings,
+        workspace_access: Callable[[UUID, UUID], bool] | None = None,
     ) -> None:
         """Create the service.
 
@@ -82,10 +83,16 @@ class SearchService:
             Application settings; ``retrieval_top_k`` and
             ``retrieval_max_top_k`` define the default and the maximum
             number of hits.
+        workspace_access:
+            Callable that answers whether a user may reach a workspace
+            (``(workspace_id, user_id) -> bool``).  It is used when a
+            search is scoped to a user; without it a scoped search cannot
+            verify the scope and is therefore rejected.
         """
         self._vector_store = vector_store
         self._embedding_service = embedding_service
         self._settings = settings
+        self._workspace_access = workspace_access
 
     # ------------------------------------------------------------------
     # internals
@@ -111,6 +118,25 @@ class SearchService:
                 details={"limit": limit, "min_limit": 1},
             )
         return min(int(limit), maximum)
+
+    def _assert_workspace_accessible(self, workspace_id: UUID, owner_id: UUID) -> None:
+        """Make sure *owner_id* may reach the workspace *workspace_id*.
+
+        Raises
+        ------
+        app.core.exceptions.NotFoundError
+            If the workspace does not exist or the user may not reach it.
+        """
+        if self._workspace_access is None:
+            raise NotFoundError(
+                f"the workspace {workspace_id} does not exist",
+                details={"workspace_id": str(workspace_id)},
+            )
+        if not self._workspace_access(workspace_id, owner_id):
+            raise NotFoundError(
+                f"the workspace {workspace_id} does not exist",
+                details={"workspace_id": str(workspace_id)},
+            )
 
     @staticmethod
     def _to_item(hit: SearchHit) -> SearchResultItem:
@@ -142,19 +168,30 @@ class SearchService:
         limit: int | None = None,
         document_ids: Sequence[UUID] | None = None,
         chunk_types: Sequence[str] | None = None,
+        owner_id: UUID | None = None,
     ) -> SearchResults:
         """Search the chunks of *workspace_id* for *query*.
 
         The workspace isolation is enforced by the vector store, never by
         the caller.
 
+        ``owner_id`` restricts the search to the workspaces the user may
+        reach.  A workspace the user may not reach is reported as
+        :class:`~app.core.exceptions.NotFoundError` - the existence of a
+        workspace of somebody else is never disclosed.
+
         Raises
         ------
         app.core.exceptions.ValidationError
             If the query is empty or too long, or if the limit is smaller
             than one.
+        app.core.exceptions.NotFoundError
+            If the workspace does not exist or the user may not reach it.
         """
         started = time.perf_counter()
+
+        if owner_id is not None:
+            self._assert_workspace_accessible(workspace_id, owner_id)
 
         cleaned = (query or "").strip()
         if not cleaned:

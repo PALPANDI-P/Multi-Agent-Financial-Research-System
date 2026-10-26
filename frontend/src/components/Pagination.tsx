@@ -38,11 +38,11 @@ export function Pagination({
     <nav
       aria-label="Pagination"
       className={cn(
-        'flex flex-col gap-3 border-t border-line px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5',
+        'flex flex-col gap-3 border-t border-line bg-surface-muted/40 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-6',
         className,
       )}
     >
-      <p className="text-sm text-ink-muted" aria-live="polite">
+      <p className="text-small text-ink-muted" aria-live="polite">
         {total === 0
           ? `No ${itemLabel}`
           : `Showing ${formatNumber(firstItem)}–${formatNumber(lastItem)} of ${formatNumber(total)} ${itemLabel}`}
@@ -54,7 +54,7 @@ export function Pagination({
             <Select
               label="Per page"
               id="pagination-page-size"
-              className="h-9 text-sm"
+              className="h-9 text-small"
               value={String(safeLimit)}
               disabled={disabled}
               onChange={(event) => {
@@ -78,8 +78,13 @@ export function Pagination({
           >
             Previous
           </Button>
-          <span className="text-sm text-ink-muted">
-            Page {formatNumber(currentPage)} of {formatNumber(totalPages)}
+          <span className="text-small whitespace-nowrap text-ink-muted">
+            Page{' '}
+            <span className="font-mono font-semibold text-ink tabular-nums">
+              {formatNumber(currentPage)}
+            </span>{' '}
+            <span className="text-ink-subtle">of</span>{' '}
+            <span className="font-mono tabular-nums">{formatNumber(totalPages)}</span>
           </span>
           <Button
             variant="secondary"

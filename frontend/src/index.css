@@ -1,94 +1,546 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
- * Design tokens
- * Tailwind v4 emits every variable declared in @theme as a real CSS custom
- * property on :root, so the palette below is the single source of truth for
- * colours, fonts and radii across the app.
+ * Dark mode
+ *
+ * Tailwind v4 does not ship a `dark:` variant out of the box.  This project
+ * follows the operating system preference, therefore the variant is bound to
+ * the `prefers-color-scheme` media query.  The palette itself lives in the
+ * runtime custom properties below, so most components do not need a `dark:`
+ * class at all - the variables flip and every utility follows.
  * ------------------------------------------------------------------------- */
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
-    "Liberation Mono", monospace;
+@custom-variant dark (@media (prefers-color-scheme: dark));
 
-  /* Neutrals / surfaces */
-  --color-canvas: #f4f6fb;
-  --color-surface: #ffffff;
-  --color-surface-muted: #eef1f7;
-  --color-line: #dee3ee;
-  --color-line-strong: #c3cbdb;
+/* ===========================================================================
+ * DESIGN SYSTEM — "Paper & Pine"
+ * ===========================================================================
+ *
+ * A research tool for reading filings.  The interface is meant to feel like
+ * good paper under a warm lamp: calm, dense where it counts, and precise.
+ *
+ * PALETTE
+ *   The canvas is a warm, uncoated paper (#faf8f3 in light) - deliberately
+ *   *not* the cold grey-white of a corporate template.  Every surface above
+ *   the canvas is a near-white card (#fffefb), so cards read as sheets of
+ *   paper laid on a desk rather than as floating boxes.
+ *
+ *   INK RAMP (4 steps)      #1b1916 -> #59524a -> #6f6759
+ *                           The darkest step is used for headings and figures,
+ *                           the middle step for prose, the lightest for
+ *                           captions and metadata.  All three pass AA on
+ *                           canvas and on surface.
+ *
+ *   LINE RAMP (3 steps)     #efeade (faint) -> #e7e1d4 (hairline) ->
+ *                           #d5ccb9 (control border).  Structure is carried
+ *                           by hairlines, not by borders or drop shadows.
+ *
+ *   ACCENT RAMP (50 -> 900) A single muted pine/teal.  50 is the tint a
+ *                           badge sits on, 700 is the text colour on that
+ *                           tint, 900 the deepest shade.  The ramp is
+ *                           *inverted* in dark mode: 50 becomes the dark
+ *                           tint, 900 the lightest tint, so the same class
+ *                           names work in both themes.
+ *
+ *   The accent is used sparingly on purpose: primary actions, the active
+ *   state, the focus ring and small data marks.  Nothing else.
+ *
+ * STATUS COLOURS
+ *   The eight pipeline states each own a hue, but every badge also prints
+ *   the raw status string - colour is never the only carrier of meaning.
+ *   queued=stone, validating=indigo, extracting=violet, chunking=teal,
+ *   embedding=amber, indexing=steel, completed=pine, failed=brick.
+ *
+ * TYPE
+ *   One sans stack for the interface, one serif display face reserved for
+ *   the two editorial entry points (the landing headline and the sign-in
+ *   headline), and one monospace face reserved for identifiers: chunk ids,
+ *   content hashes, status codes, scores, page counts and sizes.  The mono
+ *   face is the signature detail of the product - it makes every reference
+ *   look like a citation rather than like prose.
+ *
+ * SPACE & RADIUS
+ *   A 4px spacing scale, a 6/8/12/16px radius ramp and soft, low-opacity
+ *   shadows.  Cards lift by 2px on hover; they never grow a heavy shadow.
+ * ------------------------------------------------------------------------- */
 
-  /* Text */
-  --color-ink: #101828;
-  --color-ink-muted: #4a5670;
-  --color-ink-subtle: #78829a;
+:root {
+  color-scheme: light;
 
-  /* Brand */
-  --color-brand-50: #eef4ff;
-  --color-brand-100: #dbe7ff;
-  --color-brand-200: #b9d0ff;
-  --color-brand-500: #2f6fed;
-  --color-brand-600: #1f5bd8;
-  --color-brand-700: #1a49b0;
+  /* -- surfaces: paper, card, sand ---------------------------------------- */
+  --canvas: #faf8f3;
+  --surface: #fffefb;
+  --surface-muted: #f2efe7;
+  --surface-sunken: #eae5da;
 
-  /* Semantic: success */
-  --color-success-50: #ecfdf5;
-  --color-success-100: #d1fae5;
-  --color-success-600: #047857;
-  --color-success-700: #065f46;
+  /* -- line ramp: faint -> hairline -> control border --------------------- */
+  --line-faint: #efeade;
+  --line: #e7e1d4;
+  --line-strong: #d5ccb9;
 
-  /* Semantic: warning */
-  --color-warning-50: #fffaeb;
-  --color-warning-100: #fef0c7;
-  --color-warning-600: #b45309;
-  --color-warning-700: #92400e;
+  /* -- ink ramp: darkest -> lightest ------------------------------------- */
+  --ink: #1b1916;
+  --ink-muted: #59524a;
+  --ink-subtle: #6f6759;
+  --ink-inverse: #faf8f3;
 
-  /* Semantic: danger */
-  --color-danger-50: #fef2f2;
-  --color-danger-100: #fee2e2;
-  --color-danger-200: #fecaca;
-  --color-danger-600: #dc2626;
-  --color-danger-700: #b91c1c;
+  /* -- accent: a single muted pine --------------------------------------- */
+  --brand-50: #eef4f1;
+  --brand-100: #d9e7e0;
+  --brand-200: #b3cdc0;
+  --brand-300: #86ae9d;
+  --brand-400: #5b8d7b;
+  --brand-500: #3f7361;
+  --brand-600: #2f5c4d;
+  --brand-700: #264a3e;
+  --brand-800: #1e3b31;
+  --brand-900: #172d26;
 
-  /* Semantic: info */
-  --color-info-50: #eff6ff;
-  --color-info-100: #dbeafe;
-  --color-info-200: #bfdbfe;
-  --color-info-600: #2563eb;
-  --color-info-700: #1d4ed8;
+  /* -- interactive solids ------------------------------------------------- */
+  --brand-solid: #1d4237;
+  --brand-solid-hover: #163329;
+  --on-accent: #ffffff;
+  --danger-solid: #9d2f27;
+  --danger-solid-hover: #82251f;
 
-  /* Radii */
+  /* -- semantic: success ------------------------------------------------- */
+  --success-50: #eef6f0;
+  --success-100: #d6e9dc;
+  --success-200: #a9d3b8;
+  --success-600: #1f7a4d;
+  --success-700: #1a6440;
+
+  /* -- semantic: warning ------------------------------------------------- */
+  --warning-50: #fdf6e8;
+  --warning-100: #f8e8c4;
+  --warning-200: #eecf8d;
+  --warning-600: #a4690c;
+  --warning-700: #85530a;
+
+  /* -- semantic: danger -------------------------------------------------- */
+  --danger-50: #fdf0ef;
+  --danger-100: #f9dedb;
+  --danger-200: #f0bdb6;
+  --danger-600: #b4342c;
+  --danger-700: #96302a;
+
+  /* -- semantic: info ---------------------------------------------------- */
+  --info-50: #eef1f8;
+  --info-100: #dde3f2;
+  --info-200: #bcc7e4;
+  --info-600: #3a5aa8;
+  --info-700: #2f4a8c;
+
+  /* -- the eight pipeline states ----------------------------------------- */
+  --status-queued: #6f6759;
+  --status-queued-soft: #f1eee7;
+  --status-queued-line: #ddd8cc;
+
+  --status-validating: #2f4a8c;
+  --status-validating-soft: #eef1f8;
+  --status-validating-line: #d5dcee;
+
+  --status-extracting: #6b3f8f;
+  --status-extracting-soft: #f3eef8;
+  --status-extracting-line: #ded1ea;
+
+  --status-chunking: #1f6b62;
+  --status-chunking-soft: #e9f4f1;
+  --status-chunking-line: #c8e0da;
+
+  --status-embedding: #8a5a0c;
+  --status-embedding-soft: #fbf2e2;
+  --status-embedding-line: #ecd9b4;
+
+  --status-indexing: #1d5f7a;
+  --status-indexing-soft: #e9f2f6;
+  --status-indexing-line: #c6dde7;
+
+  --status-completed: #1a6440;
+  --status-completed-soft: #eef6f0;
+  --status-completed-line: #a9d3b8;
+
+  --status-failed: #96302a;
+  --status-failed-soft: #fdf0ef;
+  --status-failed-line: #f0bdb6;
+
+  /* -- focus -------------------------------------------------------------- */
+  --focus-ring: #2f5c4d;
+
+  /* -- modal / drawer overlay -------------------------------------------- */
+  --overlay: rgb(27 25 22 / 0.42);
+
+  /* -- shadows (warm, low opacity) --------------------------------------- */
+  --shadow-card: 0 1px 2px 0 rgb(27 25 22 / 0.04), 0 1px 1px 0 rgb(27 25 22 / 0.03);
+  --shadow-raised: 0 12px 28px -14px rgb(27 25 22 / 0.18), 0 2px 6px -2px rgb(27 25 22 / 0.06);
+  --shadow-panel: 0 36px 64px -28px rgb(27 25 22 / 0.28), 0 6px 16px -8px rgb(27 25 22 / 0.12);
+  --shadow-inset: inset 0 1px 0 0 rgb(255 255 255 / 0.7);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    /* -- surfaces: soft charcoal, warm not black -------------------------- */
+    --canvas: #141312;
+    --surface: #1c1b19;
+    --surface-muted: #242220;
+    --surface-sunken: #100f0e;
+
+    /* -- line ramp -------------------------------------------------------- */
+    --line-faint: #232120;
+    --line: #2e2b28;
+    --line-strong: #43403b;
+
+    /* -- ink ramp --------------------------------------------------------- */
+    --ink: #f0ece4;
+    --ink-muted: #b3ada1;
+    --ink-subtle: #8f887b;
+    --ink-inverse: #141312;
+
+    /* -- accent ramp, inverted -------------------------------------------- */
+    --brand-50: #101c19;
+    --brand-100: #152a25;
+    --brand-200: #1c3b33;
+    --brand-300: #275044;
+    --brand-400: #356b5a;
+    --brand-500: #478a75;
+    --brand-600: #68ab93;
+    --brand-700: #8cc7b2;
+    --brand-800: #b0dccb;
+    --brand-900: #d3ece2;
+
+    /* -- interactive solids ------------------------------------------------ */
+    --brand-solid: #4f9a84;
+    --brand-solid-hover: #61ad96;
+    --on-accent: #0b1512;
+    --danger-solid: #b85045;
+    --danger-solid-hover: #c56358;
+
+    /* -- semantic ---------------------------------------------------------- */
+    --success-50: #0d1f16;
+    --success-100: #123024;
+    --success-200: #1a4534;
+    --success-600: #4ec98b;
+    --success-700: #7fe0ac;
+
+    --warning-50: #241a06;
+    --warning-100: #35280b;
+    --warning-200: #4a3810;
+    --warning-600: #e0a83c;
+    --warning-700: #f0c264;
+
+    --danger-50: #24100f;
+    --danger-100: #361815;
+    --danger-200: #4d211d;
+    --danger-600: #e8776c;
+    --danger-700: #f59a90;
+
+    --info-50: #111726;
+    --info-100: #18203a;
+    --info-200: #212c50;
+    --info-600: #7f9ce0;
+    --info-700: #a5bcec;
+
+    /* -- the eight pipeline states ----------------------------------------- */
+    --status-queued: #b3aa9a;
+    --status-queued-soft: #221f1c;
+    --status-queued-line: #3a352f;
+
+    --status-validating: #a5bcec;
+    --status-validating-soft: #12162a;
+    --status-validating-line: #28325a;
+
+    --status-extracting: #c3a6e8;
+    --status-extracting-soft: #1c1526;
+    --status-extracting-line: #382a4c;
+
+    --status-chunking: #7cc9ba;
+    --status-chunking-soft: #0e1f1c;
+    --status-chunking-line: #1d3b35;
+
+    --status-embedding: #e0b96a;
+    --status-embedding-soft: #211a0d;
+    --status-embedding-line: #3e3116;
+
+    --status-indexing: #84bedb;
+    --status-indexing-soft: #101d24;
+    --status-indexing-line: #1d3644;
+
+    --status-completed: #7fe0ac;
+    --status-completed-soft: #0d1f16;
+    --status-completed-line: #1a4534;
+
+    --status-failed: #f59a90;
+    --status-failed-soft: #24100f;
+    --status-failed-line: #4d211d;
+
+    /* -- focus -------------------------------------------------------------- */
+    --focus-ring: #8cc7b2;
+
+    /* -- overlay ------------------------------------------------------------ */
+    --overlay: rgb(8 8 7 / 0.68);
+
+    /* -- shadows (black, soft) ---------------------------------------------- */
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.32);
+    --shadow-raised: 0 14px 30px -16px rgb(0 0 0 / 0.7), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+    --shadow-panel: 0 36px 64px -28px rgb(0 0 0 / 0.82), 0 6px 16px -8px rgb(0 0 0 / 0.5);
+    --shadow-inset: inset 0 1px 0 0 rgb(255 255 255 / 0.04);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Design tokens
+ *
+ * Tailwind v4 emits every variable declared in `@theme` as a real CSS custom
+ * property, therefore the palette below is the single source of truth for
+ * colours, type, radii and shadows across the app.  `inline` keeps the
+ * utility pointing at the runtime property instead of freezing its value, so
+ * one media query flips the whole product.
+ * ------------------------------------------------------------------------- */
+@theme inline {
+  /* -- fonts: system stacks only, the app must work fully offline ---------- */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+    "Noto Sans", sans-serif;
+  --font-display:
+    ui-serif, Georgia, Cambria, "Iowan Old Style", "Times New Roman", Times, serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New",
+    monospace;
+
+  /* -- type scale: display -> micro ---------------------------------------- */
+  --text-display: clamp(2.5rem, 1.95rem + 2.4vw, 3.5rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.032em;
+  --text-display--font-weight: 600;
+
+  /* The landing hero owns one size above --text-display: the editorial
+     entry point of the product has to be the largest thing on the page. */
+  --text-hero: clamp(2.75rem, 1.9rem + 3.6vw, 4.5rem);
+  --text-hero--line-height: 1.02;
+  --text-hero--letter-spacing: -0.036em;
+  --text-hero--font-weight: 600;
+
+  --text-headline: clamp(1.75rem, 1.45rem + 1.3vw, 2.25rem);
+  --text-headline--line-height: 1.12;
+  --text-headline--letter-spacing: -0.026em;
+  --text-headline--font-weight: 600;
+
+  --text-title: 1.5rem;
+  --text-title--line-height: 1.26;
+  --text-title--letter-spacing: -0.018em;
+  --text-title--font-weight: 600;
+
+  --text-subtitle: 1.125rem;
+  --text-subtitle--line-height: 1.4;
+  --text-subtitle--letter-spacing: -0.012em;
+  --text-subtitle--font-weight: 600;
+
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.65;
+
+  --text-reading: 1.0625rem;
+  --text-reading--line-height: 1.72;
+  --text-reading--letter-spacing: -0.002em;
+
+  --text-small: 0.8125rem;
+  --text-small--line-height: 1.5;
+
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.45;
+
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.4;
+  --text-micro--letter-spacing: 0.01em;
+  --text-micro--font-weight: 600;
+
+  /* -- layout -------------------------------------------------------------- */
+  --container-page: 80rem;
+  --container-prose: 44rem;
+  --container-wide: 88rem;
+
+  /* -- easings -------------------------------------------------------------- */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* -- surfaces ------------------------------------------------------------- */
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-sunken: var(--surface-sunken);
+
+  /* -- line ramp ------------------------------------------------------------ */
+  --color-line-faint: var(--line-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  /* -- ink ramp ------------------------------------------------------------- */
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-ink-inverse: var(--ink-inverse);
+
+  /* -- accent --------------------------------------------------------------- */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-solid: var(--brand-solid);
+  --color-brand-solid-hover: var(--brand-solid-hover);
+  --color-on-accent: var(--on-accent);
+
+  /* -- semantic -------------------------------------------------------------- */
+  --color-success-50: var(--success-50);
+  --color-success-100: var(--success-100);
+  --color-success-200: var(--success-200);
+  --color-success-600: var(--success-600);
+  --color-success-700: var(--success-700);
+
+  --color-warning-50: var(--warning-50);
+  --color-warning-100: var(--warning-100);
+  --color-warning-200: var(--warning-200);
+  --color-warning-600: var(--warning-600);
+  --color-warning-700: var(--warning-700);
+
+  --color-danger-50: var(--danger-50);
+  --color-danger-100: var(--danger-100);
+  --color-danger-200: var(--danger-200);
+  --color-danger-600: var(--danger-600);
+  --color-danger-700: var(--danger-700);
+  --color-danger-solid: var(--danger-solid);
+  --color-danger-solid-hover: var(--danger-solid-hover);
+
+  --color-info-50: var(--info-50);
+  --color-info-100: var(--info-100);
+  --color-info-200: var(--info-200);
+  --color-info-600: var(--info-600);
+  --color-info-700: var(--info-700);
+
+  /* -- processing states (always paired with the raw status text) ----------- */
+  --color-status-queued: var(--status-queued);
+  --color-status-queued-soft: var(--status-queued-soft);
+  --color-status-queued-line: var(--status-queued-line);
+
+  --color-status-validating: var(--status-validating);
+  --color-status-validating-soft: var(--status-validating-soft);
+  --color-status-validating-line: var(--status-validating-line);
+
+  --color-status-extracting: var(--status-extracting);
+  --color-status-extracting-soft: var(--status-extracting-soft);
+  --color-status-extracting-line: var(--status-extracting-line);
+
+  --color-status-chunking: var(--status-chunking);
+  --color-status-chunking-soft: var(--status-chunking-soft);
+  --color-status-chunking-line: var(--status-chunking-line);
+
+  --color-status-embedding: var(--status-embedding);
+  --color-status-embedding-soft: var(--status-embedding-soft);
+  --color-status-embedding-line: var(--status-embedding-line);
+
+  --color-status-indexing: var(--status-indexing);
+  --color-status-indexing-soft: var(--status-indexing-soft);
+  --color-status-indexing-line: var(--status-indexing-line);
+
+  --color-status-completed: var(--status-completed);
+  --color-status-completed-soft: var(--status-completed-soft);
+  --color-status-completed-line: var(--status-completed-line);
+
+  --color-status-failed: var(--status-failed);
+  --color-status-failed-soft: var(--status-failed-soft);
+  --color-status-failed-line: var(--status-failed-line);
+
+  /* -- focus ---------------------------------------------------------------- */
+  --color-focus: var(--focus-ring);
+
+  /* -- overlay --------------------------------------------------------------- */
+  --color-overlay: var(--overlay);
+
+  /* -- radii ----------------------------------------------------------------- */
+  --radius-xs: 0.375rem;
   --radius-control: 0.5rem;
   --radius-card: 0.75rem;
+  --radius-panel: 1rem;
   --radius-pill: 999px;
+
+  /* -- shadows ---------------------------------------------------------------- */
+  --shadow-card: var(--shadow-card);
+  --shadow-raised: var(--shadow-raised);
+  --shadow-panel: var(--shadow-panel);
+  --shadow-inset: var(--shadow-inset);
 }
 
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
   }
 
   body {
     margin: 0;
     min-height: 100vh;
-    background-color: var(--color-canvas);
-    color: var(--color-ink);
+    background-color: var(--canvas);
+    color: var(--ink);
     font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    font-feature-settings: "kern" 1, "liga" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   /* Visible focus ring for every keyboard focusable element. */
   :focus-visible {
-    outline: 2px solid var(--color-brand-600);
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
-    border-radius: 4px;
   }
 
   ::selection {
-    background-color: var(--color-brand-100);
-    color: var(--color-brand-700);
+    background-color: var(--brand-100);
+    color: var(--brand-800);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  /* Native controls follow the palette. */
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  summary {
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Chrome paints its own background over an autofilled field.  The palette
+     of the form has to win, or a filled input turns into a blue box. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--ink);
+    -webkit-box-shadow: 0 0 0 1000px var(--surface) inset;
+    box-shadow: 0 0 0 1000px var(--surface) inset;
+    caret-color: var(--ink);
+    transition: background-color 5000s ease-in-out 0s;
   }
 }
 
@@ -96,6 +548,239 @@
   /* Thin, unobtrusive scrollbars inside scrollable panels. */
   .scroll-thin {
     scrollbar-width: thin;
-    scrollbar-color: var(--color-line-strong) transparent;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+
+  /* The keyboard-only skip link of the public pages. */
+  .skip-link {
+    position: absolute;
+    left: 0.75rem;
+    top: -4rem;
+    z-index: 100;
+    border-radius: var(--radius-control);
+    background-color: var(--surface);
+    border: 1px solid var(--line-strong);
+    padding: 0.625rem 1rem;
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--ink);
+    box-shadow: var(--shadow-panel);
+    transition: top 120ms ease-out;
+  }
+
+  .skip-link:focus-visible {
+    top: 0.75rem;
+  }
+
+  /* -- entrance motion ------------------------------------------------------ */
+  .anim-rise {
+    animation: rise 460ms var(--ease-out-soft) both;
+    animation-delay: var(--rise-delay, 0ms);
+  }
+
+  .anim-fade {
+    animation: fade 320ms var(--ease-out-soft) both;
+    animation-delay: var(--fade-delay, 0ms);
+  }
+
+  .anim-scale-in {
+    animation: scale-in 200ms var(--ease-out-soft) both;
+  }
+
+  /* -- loading skeletons ----------------------------------------------------- */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--surface-muted);
+    border-radius: var(--radius-xs);
+  }
+
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgb(255 255 255 / 0.5) 45%,
+      rgb(255 255 255 / 0.5) 55%,
+      transparent 100%
+    );
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  /* -- interaction helpers ---------------------------------------------------- */
+  .card-interactive {
+    transition:
+      transform 180ms var(--ease-out-soft),
+      box-shadow 180ms var(--ease-out-soft),
+      border-color 180ms var(--ease-out-soft);
+  }
+
+  .card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-raised);
+    border-color: var(--line-strong);
+  }
+
+  /* A card that holds a focusable control behaves like a hovered card: the
+     keyboard user sees the same affordance the pointer user gets. */
+  .card-interactive:focus-within {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-raised);
+  }
+
+  /* A hairline that opens a section, used where a full border would be too
+     loud. */
+  .rule-soft {
+    height: 1px;
+    background-color: var(--line);
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .measure {
+    max-width: 62ch;
+  }
+
+  /* A narrower measure for the short paragraphs of a landing section. */
+  .measure-narrow {
+    max-width: 52ch;
+  }
+
+  /* Press feedback for surfaces that are not a <button>. */
+  .pressable {
+    transition: transform 160ms var(--ease-out-soft);
+  }
+
+  .pressable:active {
+    transform: translateY(1px);
+  }
+
+  /* A hairline that fades at both ends: it separates two blocks without
+     drawing a box around them. */
+  .rule-fade {
+    height: 1px;
+    background-image: linear-gradient(
+      to right,
+      transparent,
+      var(--line) 10%,
+      var(--line) 90%,
+      transparent
+    );
+  }
+
+  /* The bottom of a clamped passage fades instead of being cut, so the
+     reader can tell that there is more text. */
+  .fade-bottom {
+    -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+  }
+
+  /* An underline that draws itself when the link is hovered. */
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 180ms var(--ease-out-soft);
+  }
+
+  .link-underline:hover {
+    background-size: 100% 1px;
+  }
+
+  /* The faint ruled grid of the hero: the guide lines of a ledger, barely
+     visible. */
+  .paper-grid {
+    background-image:
+      linear-gradient(to right, var(--line-faint) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--line-faint) 1px, transparent 1px);
+    background-size: 4.5rem 4.5rem;
+    -webkit-mask-image: radial-gradient(120% 90% at 50% 0%, #000 25%, transparent 78%);
+    mask-image: radial-gradient(120% 90% at 50% 0%, #000 25%, transparent 78%);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Keyframes
+ * ------------------------------------------------------------------------- */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes focus-in {
+  from {
+    outline-offset: 6px;
+  }
+  to {
+    outline-offset: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Reduced motion
+ *
+ * Every animation and transition of the product is decorative; the media
+ * query removes them for the users that asked for it.
+ * ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .card-interactive:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :focus-visible {
+    animation: focus-in 180ms var(--ease-out-soft);
   }
 }

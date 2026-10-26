@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '../lib/cn'
+import { CloseIcon } from './icons'
 
 export interface ModalProps {
   open: boolean
@@ -100,7 +101,7 @@ export function Modal({
   if (!open) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-ink/40 p-0 sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-overlay p-0 backdrop-blur-[2px] sm:items-center sm:p-6">
       <button
         type="button"
         aria-label="Close dialog"
@@ -116,17 +117,17 @@ export function Modal({
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
         className={cn(
-          'relative z-10 w-full rounded-t-card border border-line bg-surface shadow-xl sm:rounded-card',
+          'anim-scale-in relative z-10 w-full rounded-t-panel border border-line bg-surface shadow-panel sm:rounded-panel',
           SIZE_CLASSES[size],
         )}
       >
-        <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4">
+        <header className="flex items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6 sm:py-5">
           <div className="min-w-0">
-            <h2 id={titleId} className="text-base font-semibold text-ink">
+            <h2 id={titleId} className="text-subtitle text-ink">
               {title}
             </h2>
             {description ? (
-              <p id={descriptionId} className="mt-1 text-sm text-ink-muted">
+              <p id={descriptionId} className="mt-1 max-w-prose text-small text-ink-muted">
                 {description}
               </p>
             ) : null}
@@ -135,16 +136,14 @@ export function Modal({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="rounded-control p-1 text-ink-subtle transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+            className="-mt-1 -mr-1 rounded-control p-1.5 text-ink-subtle transition-colors hover:bg-surface-muted hover:text-ink"
           >
-            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
-            </svg>
+            <CloseIcon size={18} />
           </button>
         </header>
-        <div className="max-h-[70vh] overflow-y-auto px-5 py-4 scroll-thin">{children}</div>
+        <div className="max-h-[70vh] overflow-y-auto px-5 py-5 scroll-thin sm:px-6">{children}</div>
         {footer ? (
-          <footer className="flex flex-wrap items-center justify-end gap-2 border-t border-line px-5 py-3">
+          <footer className="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-surface-muted/50 px-5 py-3.5 sm:px-6">
             {footer}
           </footer>
         ) : null}
@@ -153,4 +152,3 @@ export function Modal({
     document.body,
   )
 }
-

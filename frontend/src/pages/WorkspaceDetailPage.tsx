@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { describeError } from '../api/client'
 import type { DocumentRead } from '../api/types'
 import {
@@ -12,8 +12,8 @@ import {
   Input,
   Pagination,
   Select,
-  Spinner,
 } from '../components'
+import { ArrowLeftIcon, FilterIcon, PencilIcon, TrashIcon } from '../components/icons'
 import { DocumentList, UploadPanel } from '../features/documents'
 import { SearchPanel } from '../features/search'
 import { DeleteWorkspaceDialog, WorkspaceDialog } from '../features/workspaces'
@@ -38,6 +38,8 @@ export function WorkspaceDetailPage() {
   const params = useParams<{ id: string }>()
   const workspaceId = params.id ?? ''
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const initialQuery = searchParams.get('q') ?? ''
 
   const [renameOpen, setRenameOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -52,7 +54,6 @@ export function WorkspaceDetailPage() {
 
   const debouncedCompany = useDebouncedValue(companyFilter, 300)
   const debouncedType = useDebouncedValue(typeFilter, 300)
-
 
   const workspaceQuery = useWorkspace(workspaceId)
 
@@ -94,23 +95,22 @@ export function WorkspaceDetailPage() {
 
   if (workspaceQuery.isPending) {
     return (
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-center px-4 py-20 sm:px-6">
-        <Spinner label="Loading workspace" />
+      <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-5 py-12 sm:px-8">
+        <span className="skeleton h-3 w-32" />
+        <span className="skeleton h-8 w-96 max-w-full" />
+        <span className="skeleton h-4 w-full max-w-2xl" />
       </div>
     )
   }
 
   if (workspaceError) {
     return (
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-10 sm:px-6">
+      <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-5 py-12 sm:px-8">
         <Alert tone="danger" title="This workspace could not be loaded" code={workspaceError.code}>
           {workspaceError.message}
         </Alert>
         <div>
-          <Link
-            to="/"
-            className="text-sm font-medium text-brand-700 underline hover:text-brand-600"
-          >
+          <Link to="/app" className="text-small font-medium text-brand-700 hover:text-brand-600">
             Back to all workspaces
           </Link>
         </div>
@@ -120,15 +120,12 @@ export function WorkspaceDetailPage() {
 
   if (!workspace) {
     return (
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-10 sm:px-6">
+      <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-5 py-12 sm:px-8">
         <Alert tone="warning" title="Workspace not found">
           The API did not return a workspace with this identifier.
         </Alert>
         <div>
-          <Link
-            to="/"
-            className="text-sm font-medium text-brand-700 underline hover:text-brand-600"
-          >
+          <Link to="/app" className="text-small font-medium text-brand-700 hover:text-brand-600">
             Back to all workspaces
           </Link>
         </div>
@@ -137,49 +134,68 @@ export function WorkspaceDetailPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
-      <div>
-        <Link to="/" className="text-sm font-medium text-brand-700 hover:text-brand-600">
-          ← All workspaces
-        </Link>
-      </div>
+    <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-5 py-10 sm:px-8 sm:py-12">
+      <Link
+        to="/app"
+        className="inline-flex w-fit items-center gap-1.5 rounded-xs text-small font-medium text-ink-muted transition-colors duration-150 hover:text-ink"
+      >
+        <ArrowLeftIcon size={15} />
+        All workspaces
+      </Link>
 
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <header className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-ink">{workspace.name}</h1>
+          <p className="flex items-center gap-2.5 text-micro font-semibold tracking-[0.14em] text-brand-700 uppercase">
+            <span aria-hidden="true" className="h-px w-6 bg-brand-300" />
+            Workspace
+          </p>
+          <h1 className="mt-3 text-headline text-balance text-ink">{workspace.name}</h1>
           {workspace.description ? (
-            <p className="mt-1.5 max-w-3xl text-sm text-ink-muted">{workspace.description}</p>
+            <p className="mt-3 max-w-prose text-body text-ink-muted">{workspace.description}</p>
           ) : (
-            <p className="mt-1.5 text-sm italic text-ink-subtle">No description</p>
+            <p className="mt-3 text-body text-ink-subtle italic">No description</p>
           )}
-          <dl className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-ink-muted">
-            <div className="flex items-center gap-1.5">
-              <dt>Documents:</dt>
-              <dd className="font-semibold text-ink">{formatNumber(workspace.document_count)}</dd>
+          <div className="mt-6 border-t border-line pt-4">
+            <dl className="flex flex-wrap items-center gap-x-7 gap-y-3 text-caption text-ink-muted">
+            <div className="flex items-baseline gap-2">
+              <dt className="text-ink-subtle">Documents</dt>
+              <dd className="font-mono text-body font-semibold text-ink tabular-nums">
+                {formatNumber(workspace.document_count)}
+              </dd>
             </div>
-            <div className="flex items-center gap-1.5">
-              <dt>Created:</dt>
-              <dd className="text-ink">{formatDateTime(workspace.created_at)}</dd>
+            <div className="flex items-baseline gap-2">
+              <dt className="text-ink-subtle">Created</dt>
+              <dd className="font-mono text-ink">{formatDateTime(workspace.created_at)}</dd>
             </div>
-            <div className="flex items-center gap-1.5">
-              <dt>Updated:</dt>
-              <dd className="text-ink">{formatDateTime(workspace.updated_at)}</dd>
+            <div className="flex items-baseline gap-2">
+              <dt className="text-ink-subtle">Updated</dt>
+              <dd className="font-mono text-ink">{formatDateTime(workspace.updated_at)}</dd>
             </div>
             {workspace.owner_id ? (
-              <div className="flex items-center gap-1.5">
-                <dt>Owner:</dt>
+              <div className="flex items-baseline gap-2">
+                <dt className="text-ink-subtle">Owner</dt>
                 <dd className="font-mono text-ink">{workspace.owner_id}</dd>
               </div>
             ) : null}
-          </dl>
+            </dl>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" onClick={() => setRenameOpen(true)}>
-            Rename workspace
+        <div className="flex shrink-0 flex-wrap gap-2">
+          <Button
+            variant="secondary"
+            leadingIcon={<PencilIcon size={15} />}
+            onClick={() => setRenameOpen(true)}
+          >
+            Rename
           </Button>
-          <Button variant="danger" onClick={() => setDeleteOpen(true)}>
-            Delete workspace
+          <Button
+            variant="ghost"
+            leadingIcon={<TrashIcon size={15} />}
+            onClick={() => setDeleteOpen(true)}
+            className="text-danger-700 hover:bg-danger-50 hover:text-danger-700"
+          >
+            Delete
           </Button>
         </div>
       </header>
@@ -202,17 +218,7 @@ export function WorkspaceDetailPage() {
           description="Semantic search over the chunks indexed for this workspace."
         />
         <CardBody>
-          <SearchPanel workspaceId={workspace.id} />
-        </CardBody>
-      </Card>
-
-      <Card>
-        <CardHeader
-          title="Upload a document"
-          description="Files are ingested by the API; the processing status shown afterwards is the one returned by the server."
-        />
-        <CardBody>
-          <UploadPanel workspaceId={workspace.id} />
+          <SearchPanel key={initialQuery} workspaceId={workspace.id} initialQuery={initialQuery} autoSearch />
         </CardBody>
       </Card>
 
@@ -229,7 +235,11 @@ export function WorkspaceDetailPage() {
           }
         />
 
-        <CardBody>
+        <div className="border-b border-line bg-surface-muted/40 px-5 py-4 sm:px-6">
+          <p className="mb-3 flex items-center gap-1.5 text-micro font-semibold tracking-[0.12em] text-ink-subtle uppercase">
+            <FilterIcon size={13} />
+            Filters
+          </p>
           <div className="grid gap-4 sm:grid-cols-3">
             <Select
               label="Processing status"
@@ -264,7 +274,7 @@ export function WorkspaceDetailPage() {
               placeholder="Filter by type…"
             />
           </div>
-        </CardBody>
+        </div>
 
         {documentsError ? (
           <CardBody>
@@ -310,6 +320,16 @@ export function WorkspaceDetailPage() {
         ) : null}
       </Card>
 
+      <Card>
+        <CardHeader
+          title="Upload a document"
+          description="Files are ingested by the API; the processing status shown afterwards is the one returned by the server."
+        />
+        <CardBody>
+          <UploadPanel workspaceId={workspace.id} />
+        </CardBody>
+      </Card>
+
       <WorkspaceDialog
         open={renameOpen}
         mode="edit"
@@ -323,7 +343,7 @@ export function WorkspaceDetailPage() {
         onClose={() => setDeleteOpen(false)}
         onDeleted={() => {
           setDeleteOpen(false)
-          navigate('/', { replace: true })
+          navigate('/app', { replace: true })
         }}
       />
     </div>

@@ -6,6 +6,6 @@ Every router of this package is mounted under the ``/api/v1`` prefix by
 
 from __future__ import annotations
 
-from app.api.v1 import documents, health, search, workspaces
+from app.api.v1 import auth, documents, health, search, workspaces
 
-__all__ = ["documents", "health", "search", "workspaces"]
+__all__ = ["auth", "documents", "health", "search", "workspaces"]

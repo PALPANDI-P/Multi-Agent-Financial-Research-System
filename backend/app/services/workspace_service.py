@@ -157,8 +157,12 @@ class WorkspaceService:
         *,
         name: str,
         description: str | None = None,
+        owner_id: UUID | None = None,
     ) -> WorkspaceSummary:
         """Create a workspace and return its summary.
+
+        ``owner_id`` is the user that owns the workspace.  ``None`` creates
+        a workspace without an owner (the shared seed corpus for example).
 
         Raises
         ------
@@ -169,7 +173,11 @@ class WorkspaceService:
         cleaned = self._validate_name(name)
         with self._session_scope() as session:
             repository = WorkspaceRepository(session)
-            workspace = repository.create(name=cleaned, description=description)
+            workspace = repository.create(
+                name=cleaned,
+                description=description,
+                owner_id=owner_id,
+            )
             return self._to_summary(workspace, document_count=0)
 
     def list_workspaces(
@@ -178,12 +186,16 @@ class WorkspaceService:
         limit: int = 20,
         offset: int = 0,
         name_contains: str | None = None,
+        owner_id: UUID | None = None,
     ) -> tuple[list[WorkspaceSummary], int]:
         """Return a page of workspaces and the **total** number of workspaces.
 
         The document counts of the page are collected with a single grouped
         query, therefore the number of executed statements does not grow
         with the size of the page.
+
+        ``owner_id`` restricts the page to the workspaces the user owns or
+        is a member of.  ``None`` means *no filtering*.
         """
         with self._session_scope() as session:
             repository = WorkspaceRepository(session)
@@ -191,6 +203,7 @@ class WorkspaceService:
                 limit=limit,
                 offset=offset,
                 name_contains=name_contains,
+                owner_id=owner_id,
             )
             counts = repository.count_documents([workspace.id for workspace in page])
             summaries = [
@@ -199,19 +212,27 @@ class WorkspaceService:
             ]
             return summaries, total
 
-    def get_workspace(self, workspace_id: UUID) -> WorkspaceSummary:
+    def get_workspace(
+        self,
+        workspace_id: UUID,
+        *,
+        owner_id: UUID | None = None,
+    ) -> WorkspaceSummary:
         """Return the workspace *workspace_id*.
+
+        ``owner_id`` restricts the answer to the workspaces the user owns or
+        is a member of.  A workspace the user may not reach is reported as
+        :class:`~app.core.exceptions.NotFoundError` - the existence of a
+        workspace of somebody else is never disclosed.
 
         Raises
         ------
         app.core.exceptions.NotFoundError
-            If the workspace does not exist.
+            If the workspace does not exist or the user may not reach it.
         """
         with self._session_scope() as session:
             repository = WorkspaceRepository(session)
-            workspace = repository.get(workspace_id)
-            if workspace is None:
-                raise self._not_found(workspace_id)
+            workspace = self._require_accessible(repository, workspace_id, owner_id)
             counts = repository.count_documents([workspace_id])
             return self._to_summary(
                 workspace, document_count=counts.get(workspace_id, 0)
@@ -221,6 +242,7 @@ class WorkspaceService:
         self,
         workspace_id: UUID,
         *,
+        owner_id: UUID | None = None,
         name: str | _Unset | None = UNSET,
         description: str | _Unset | None = UNSET,
     ) -> WorkspaceSummary:
@@ -234,16 +256,14 @@ class WorkspaceService:
         Raises
         ------
         app.core.exceptions.NotFoundError
-            If the workspace does not exist.
+            If the workspace does not exist or the user may not reach it.
         app.core.exceptions.ValidationError
             If a new name is empty or too long.
         """
         cleaned = self._validate_name(name) if name is not UNSET else UNSET
         with self._session_scope() as session:
             repository = WorkspaceRepository(session)
-            workspace = repository.get(workspace_id)
-            if workspace is None:
-                raise self._not_found(workspace_id)
+            workspace = self._require_accessible(repository, workspace_id, owner_id)
             if cleaned is not UNSET or description is not UNSET:
                 workspace = repository.update(
                     workspace, name=cleaned, description=description
@@ -253,7 +273,12 @@ class WorkspaceService:
                 workspace, document_count=counts.get(workspace_id, 0)
             )
 
-    def delete_workspace(self, workspace_id: UUID) -> None:
+    def delete_workspace(
+        self,
+        workspace_id: UUID,
+        *,
+        owner_id: UUID | None = None,
+    ) -> None:
         """Delete the workspace *workspace_id* and every file it owns.
 
         Ordering
@@ -273,22 +298,85 @@ class WorkspaceService:
         Raises
         ------
         app.core.exceptions.NotFoundError
-            If the workspace does not exist.
+            If the workspace does not exist or the user may not reach it.
         """
         storage_keys: list[str] = []
         with self._session_scope() as session:
             workspace_repository = WorkspaceRepository(session)
             document_repository = DocumentRepository(session)
-            if workspace_repository.get(workspace_id) is None:
-                raise self._not_found(workspace_id)
+            self._require_accessible(workspace_repository, workspace_id, owner_id)
             storage_keys = document_repository.list_storage_keys(workspace_id)
             if not workspace_repository.delete(workspace_id):
                 raise self._not_found(workspace_id)
         self._remove_files(storage_keys)
 
     # ------------------------------------------------------------------
+    # membership
+    # ------------------------------------------------------------------
+    def add_member(
+        self,
+        workspace_id: UUID,
+        user_id: UUID,
+        *,
+        role: str = "member",
+    ) -> bool:
+        """Add the user *user_id* to the workspace *workspace_id*.
+
+        The method is idempotent: a membership that already exists is not
+        created a second time and ``False`` is returned.
+        """
+        with self._session_scope() as session:
+            return WorkspaceRepository(session).add_member(
+                workspace_id, user_id, role=role
+            )
+
+    def set_owner(self, workspace_id: UUID, owner_id: UUID | None) -> bool:
+        """Set the owner of the workspace *workspace_id*."""
+        with self._session_scope() as session:
+            return WorkspaceRepository(session).set_owner(workspace_id, owner_id)
+
+    def list_member_ids(self, workspace_id: UUID) -> list[UUID]:
+        """Return the ids of the members of the workspace *workspace_id*."""
+        with self._session_scope() as session:
+            return WorkspaceRepository(session).list_member_ids(workspace_id)
+
+    def can_access_workspace(self, workspace_id: UUID, user_id: UUID) -> bool:
+        """Return whether *user_id* may reach the workspace *workspace_id*."""
+        with self._session_scope() as session:
+            return WorkspaceRepository(session).can_access_workspace(
+                workspace_id, user_id
+            )
+
+    def list_accessible_workspace_ids(self, user_id: UUID) -> list[UUID]:
+        """Return the ids of the workspaces *user_id* may reach."""
+        with self._session_scope() as session:
+            return WorkspaceRepository(session).list_accessible_workspace_ids(user_id)
+
+    # ------------------------------------------------------------------
     # internals
     # ------------------------------------------------------------------
+    @staticmethod
+    def _require_accessible(
+        repository: WorkspaceRepository,
+        workspace_id: UUID,
+        owner_id: UUID | None,
+    ) -> Workspace:
+        """Return the workspace *workspace_id* if the user may reach it.
+
+        Raises
+        ------
+        app.core.exceptions.NotFoundError
+            If the workspace does not exist or the user may not reach it.
+        """
+        workspace = repository.get(workspace_id)
+        if workspace is None:
+            raise WorkspaceService._not_found(workspace_id)
+        if owner_id is not None and not repository.can_access_workspace(
+            workspace_id, owner_id
+        ):
+            raise WorkspaceService._not_found(workspace_id)
+        return workspace
+
     @staticmethod
     def _not_found(workspace_id: UUID) -> NotFoundError:
         """Return the error that reports a missing workspace."""

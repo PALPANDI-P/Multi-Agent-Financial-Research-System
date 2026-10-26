@@ -73,7 +73,7 @@ export function DeleteWorkspaceDialog({
           {error.message}
         </Alert>
       ) : null}
-      <p className="text-sm text-ink-muted">
+      <p className="text-small text-ink-muted">
         You are about to delete{' '}
         <span className="font-semibold text-ink">{workspace?.name ?? 'this workspace'}</span>, which
         contains {workspace?.document_count ?? 0} document(s).

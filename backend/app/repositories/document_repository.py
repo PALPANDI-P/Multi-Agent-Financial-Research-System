@@ -6,12 +6,13 @@ from collections.abc import Sequence
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.enums import ProcessingStatus
 from app.db.base import utcnow
 from app.db.models.document import Document
+from app.db.models.workspace import Workspace, WorkspaceMember
 
 __all__ = ["DocumentRepository"]
 
@@ -19,6 +20,25 @@ __all__ = ["DocumentRepository"]
 def _status_value(status: ProcessingStatus | str) -> str:
     """Return the persisted value of *status*."""
     return ProcessingStatus(status).value
+
+
+def _accessible_workspace_ids(owner_id: UUID):
+    """Return the query of the workspaces *owner_id* may reach.
+
+    A workspace is reachable when the user owns it or when it is a member
+    of it.  The condition is a single expression with a subquery, therefore
+    the filter never costs an extra round trip.
+    """
+    return select(Workspace.id).where(
+        or_(
+            Workspace.owner_id == owner_id,
+            Workspace.id.in_(
+                select(WorkspaceMember.workspace_id).where(
+                    WorkspaceMember.user_id == owner_id
+                )
+            ),
+        )
+    )
 
 
 class DocumentRepository:
@@ -189,9 +209,19 @@ class DocumentRepository:
     # ------------------------------------------------------------------
     # reads
     # ------------------------------------------------------------------
-    def get(self, document_id: UUID) -> Document | None:
-        """Return the document *document_id* or ``None``."""
-        return self._session.get(Document, document_id)
+    def get(self, document_id: UUID, *, owner_id: UUID | None = None) -> Document | None:
+        """Return the document *document_id* or ``None``.
+
+        ``owner_id`` restricts the lookup to the documents of the
+        workspaces the user may reach.  ``None`` means *no filtering*.
+        """
+        if owner_id is None:
+            return self._session.get(Document, document_id)
+        statement = select(Document).where(
+            Document.id == document_id,
+            Document.workspace_id.in_(_accessible_workspace_ids(owner_id)),
+        )
+        return self._session.execute(statement).scalars().first()
 
     def get_by_content_hash(self, workspace_id: UUID, content_hash: str) -> Document | None:
         """Return the document with *content_hash* of *workspace_id*."""
@@ -214,13 +244,21 @@ class DocumentRepository:
         status: ProcessingStatus | str | None = None,
         document_type: str | None = None,
         company_name: str | None = None,
+        owner_id: UUID | None = None,
     ) -> tuple[list[Document], int]:
         """Return a page of documents of a workspace and the **total** count.
 
         The second element of the tuple is the number of documents that
         match the filters - not the size of the returned page.
+
+        ``owner_id`` restricts the page to the documents of the workspaces
+        the user may reach.  ``None`` means *no filtering*.
         """
         filters = [Document.workspace_id == workspace_id]
+        if owner_id is not None:
+            filters.append(
+                Document.workspace_id.in_(_accessible_workspace_ids(owner_id))
+            )
         if status is not None:
             filters.append(Document.processing_status == _status_value(status))
         if document_type is not None:

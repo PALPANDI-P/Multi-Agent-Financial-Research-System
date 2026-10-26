@@ -22,7 +22,13 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from pydantic import Field
 
-from app.api.deps import get_document_service, get_search_service, get_workspace_service
+from app.api.deps import (
+    CurrentUserDep,
+    get_document_service,
+    get_search_service,
+    get_workspace_service,
+    owner_scope,
+)
 from app.core.exceptions import NotFoundError
 from app.schemas.search import SearchRequest, SearchResponse, SearchResultItem
 from app.services.document_service import DocumentService
@@ -81,14 +87,18 @@ def search(
     workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)],
     document_service: Annotated[DocumentService, Depends(get_document_service)],
     search_service: Annotated[SearchService, Depends(get_search_service)],
+    current_user: CurrentUserDep,
 ) -> SearchResponse:
     """Search the chunks of the workspace *workspace_id*.
 
     An unknown workspace is answered with ``404``; a workspace without
     indexed documents is answered with an empty result list - it is not an
-    error.
+    error.  A workspace the user may not reach is answered with ``404`` as
+    well: the existence of a workspace of somebody else is never
+    disclosed.
     """
-    workspace_service.get_workspace(workspace_id)
+    scope = owner_scope(current_user)
+    workspace_service.get_workspace(workspace_id, owner_id=scope)
 
     document_ids: list[UUID] | None = None
     if payload.document_ids is not None:
@@ -104,6 +114,7 @@ def search(
         limit=payload.limit,
         document_ids=document_ids,
         chunk_types=payload.chunk_types,
+        owner_id=scope,
     )
 
     return SearchResponse(
