@@ -8,6 +8,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core.exceptions import ConfigurationError
 
+import os
+_IS_VERCEL = os.environ.get('VERCEL') is not None
+
 __all__ = [
     'BACKEND_DIR',
     'ENV_FILE',
@@ -54,7 +57,7 @@ class Settings(BaseSettings):
 
     # ---- document storage -------------------------------------------------------
     storage_provider: str = 'local'
-    storage_root: Path = Path('data/storage')
+    storage_root: Path = Path('/tmp/storage') if _IS_VERCEL else Path('data/storage')
     max_upload_size_bytes: int = 52428800
     allowed_document_extensions: list[str] = ['.pdf']
     allowed_mime_types: list[str] = ['application/pdf']
@@ -88,6 +91,11 @@ class Settings(BaseSettings):
 
     # ---- http --------------------------------------------------------------------
     cors_origins: list[str] = ['http://localhost:5173', 'http://127.0.0.1:5173']
+
+    # ---- vercel / serverless -------------------------------------------------
+    vercel: bool = _IS_VERCEL
+    vercel_function_timeout: int = 60
+    vercel_function_memory: int = 1024
 
     # ---- authentication ---------------------------------------------------------
     auth_password_min_length: int = 8
@@ -170,3 +178,4 @@ def validate_runtime_settings(config: Settings) -> None:
                 'DATABASE_URL must not contain the development placeholder in production',
                 details={'database_url': config.database_url, 'app_env': 'production'},
             )
+

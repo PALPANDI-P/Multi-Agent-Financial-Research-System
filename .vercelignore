@@ -1,0 +1,11 @@
+﻿# Vercel ignore file
+.venv/
+node_modules/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+.env
+.env.local
+data/storage/
+*.log

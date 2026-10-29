@@ -1,33 +1,20 @@
 {
-  "src": "frontend/dist",
-  "command": "npm run build",
-  "environment": {
-    "NODE_ENV": "production",
-    "GENERATE_SOURCEMAP": "false",
-    "VITE_API_BASE_URL": "${VITE_API_BASE_URL}",
-    "VITE_APP_ENV": "${VITE_APP_ENV}",
-    "VITE_WS_ENDPOINT": "${VITE_WS_ENDPOINT}"
-  },
-  "build": {
-    "command": "npm run build",
-    "cwd": "frontend",
-    "output": "dist",
-    "timeout": 600
-  },
-  "static": {
-    "excludedPath": "/(.*)\\.py$",
-    "packageJsonPath": "frontend/package.json"
-  },
-  "routes": [
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/frontend/dist/index.html",
-      "status": 200
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
     {
-      "source": "/(.*)\\.(js|css|json|svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot|otf|html)",
+      "source": "/assets/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -35,23 +22,5 @@
         }
       ]
     }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "https://${VERCEL_URL}/api/$1"
-    }
-  ],
-  "images": {
-    "domains": [
-      "localhost"
-    ],
-    "remotePatterns": [
-      {
-        "protocol": "https",
-        "hostname": "**",
-        "pathname": "/**"
-      }
-    ]
-  }
-}
+  ]
+}

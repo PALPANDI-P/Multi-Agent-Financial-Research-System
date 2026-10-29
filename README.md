@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ﻿# Multi-Agent Financial Research System
 
 A research platform for financial documents: upload annual reports and
@@ -656,6 +655,5 @@ Milestone 1 milestone:
 They remain the property of their issuers; they are redistributed here for
 research and demonstration purposes.  The SHA-256 checksum of every document
 is pinned in `data/seed_manifest.json`.
-=======
 # Multi-Agent-Financial-Research-System
->>>>>>> 2470993104a466657f350076bd441d8347fd49d9
+
