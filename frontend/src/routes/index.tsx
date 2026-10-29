@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom'
 import { DashboardPage } from '../pages/DashboardPage'
+import { FinancialAnalysisPage } from '../pages/FinancialAnalysisPage'
 import { LandingPage } from '../pages/LandingPage'
 import { LoginPage } from '../pages/LoginPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
@@ -37,6 +38,7 @@ export const routes = [
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'workspaces/:id', element: <WorkspaceDetailPage /> },
+      { path: 'workspaces/:id/analysis', element: <FinancialAnalysisPage /> },
     ],
   },
   { path: '/workspaces/:id', element: <LegacyWorkspaceRedirect /> },

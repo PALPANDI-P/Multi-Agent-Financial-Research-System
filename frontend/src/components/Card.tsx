@@ -33,7 +33,7 @@ export function CardHeader({ title, description, actions, className }: CardHeade
   return (
     <header
       className={cn(
-        'flex flex-col gap-3 border-b border-line px-5 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6 sm:px-6 sm:py-5',
+        'flex flex-col gap-3 border-b border-line px-4 py-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 sm:px-5 sm:py-4',
         className,
       )}
     >
@@ -49,7 +49,7 @@ export function CardHeader({ title, description, actions, className }: CardHeade
 }
 
 export function CardBody({ children, className }: CardProps) {
-  return <div className={cn('px-5 py-5 sm:px-6', className)}>{children}</div>
+  return <div className={cn('px-4 py-3 sm:px-5', className)}>{children}</div>
 }
 
 export function CardFooter({ children, className }: CardProps) {

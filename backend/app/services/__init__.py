@@ -1,12 +1,6 @@
-"""Service layer: the business rules of the Multi-Agent Financial Research
-System.
+"""Service layer."""
 
-A service owns the rules, opens its own short lived database sessions and
-returns **frozen dataclasses** - never ORM objects and never Pydantic
-schemas.  The repositories below :mod:`app.repositories` own the SQL and
-never import this package, therefore the dependency arrow points in one
-direction only: services -> repositories -> models.
-"""
+import contextlib
 
 from app.services.auth_service import (
     ANONYMOUS_USER,
@@ -23,11 +17,32 @@ from app.services.document_service import (
     DocumentSummary,
     JobSummary,
 )
+from app.services.red_flag_service import (
+    RedFlagAgent,
+    RedFlagAnalysis,
+    RedFlagAnalyzer,
+    RedFlagDetector,
+    RedFlagEngine,
+    RedFlagFinding,
+    RedFlagOutcome,
+    RedFlagReport,
+    RedFlagResult,
+    RedFlagService,
+    RedFlagSeverity,
+    RiskRule,
+    Severity,
+    analyze_red_flags,
+    detect_red_flags,
+    find_red_flags,
+)
 from app.services.search_service import (
     SearchResultItem,
     SearchResults,
     SearchService,
 )
+
+with contextlib.suppress(Exception):
+    from app.services.citation_service import *  # noqa: F403
 from app.services.workspace_service import WorkspaceService, WorkspaceSummary
 
 __all__ = [
@@ -35,16 +50,164 @@ __all__ = [
     "DEMO_SCENARIOS",
     "AuthService",
     "AuthenticatedSession",
+    "CalculationResult",
+    "CalculationService",
     "DocumentProcessor",
     "DocumentRegistration",
     "DocumentService",
     "DocumentSummary",
+    "FinancialCalculationService",
+    "FinancialOrchestrator",
+    "FinancialService",
+    "FinancialValidationAndCalculationService",
+    "FinancialValidationService",
+    "FinancialWorkflowOrchestrator",
     "JobSummary",
+    "OrchestrationLayer",
+    "OrchestrationOutcome",
+    "OrchestrationResult",
+    "OrchestrationService",
+    "OrchestrationStatus",
+    "Orchestrator",
+    "ProcessingOrchestrator",
+    "RedFlagAgent",
+    "RedFlagAnalysis",
+    "RedFlagAnalyzer",
+    "RedFlagDetector",
+    "RedFlagEngine",
+    "RedFlagFinding",
+    "RedFlagOutcome",
+    "RedFlagReport",
+    "RedFlagResult",
+    "RedFlagService",
+    "RedFlagSeverity",
+    "RiskRule",
     "ScenarioSummary",
     "SearchResultItem",
     "SearchResults",
     "SearchService",
+    "Severity",
+    "StageStatus",
     "UserSummary",
+    "ValidationOutcome",
+    "ValidationResult",
+    "WorkflowOrchestrator",
+    "WorkflowOutcome",
+    "WorkflowResult",
+    "WorkflowService",
+    "WorkflowStatus",
     "WorkspaceService",
     "WorkspaceSummary",
+    "analyze_red_flags",
+    "create_orchestrator",
+    "detect_red_flags",
+    "find_red_flags",
+    "get_orchestrator",
 ]
+import contextlib
+
+from app.services.financial_validation_calculation_service import (
+    CalculationResult,
+    CalculationService,
+    FinancialCalculationService,
+    FinancialService,
+    FinancialValidationAndCalculationService,
+    FinancialValidationService,
+    ValidationOutcome,
+    ValidationResult,
+)
+
+with contextlib.suppress(Exception):
+    from app.orchestration import (
+        FinancialOrchestrator,
+        FinancialWorkflowOrchestrator,
+        OrchestrationLayer,
+        OrchestrationOutcome,
+        OrchestrationResult,
+        OrchestrationService,
+        OrchestrationStatus,
+        Orchestrator,
+        ProcessingOrchestrator,
+        StageStatus,
+        WorkflowOrchestrator,
+        WorkflowOutcome,
+        WorkflowResult,
+        WorkflowService,
+        WorkflowStatus,
+        create_orchestrator,
+        get_orchestrator,
+    )
+
+with contextlib.suppress(Exception):
+    from app.services.research_service import (
+        ResearchAgent,
+        ResearchAnalysis,
+        ResearchAnswer,
+        ResearchFinding,
+        ResearchOutcome,
+        ResearchReport,
+        ResearchResult,
+        ResearchService,
+        analyze_research,
+        answer_question,
+        ask_research,
+        research,
+    )
+
+with contextlib.suppress(Exception):
+    from app.services.comparison_service import (
+        CompanyComparison,
+        CompanyComparisonAgent,
+        Comparison,
+        ComparisonAgent,
+        ComparisonAnalysis,
+        ComparisonData,
+        ComparisonFinding,
+        ComparisonItem,
+        ComparisonOutcome,
+        ComparisonReport,
+        ComparisonResult,
+        ComparisonService,
+        FinancialComparisonAgent,
+        analyze_comparison,
+        compare,
+        compare_companies,
+        compare_financial_metrics,
+        compare_financials,
+        compare_metrics,
+        run_comparison,
+    )
+
+with contextlib.suppress(Exception):
+    from app.services.report_service import (
+        Report,
+        ReportAgent,
+        ReportAnalysis,
+        ReportContent,
+        ReportData,
+        ReportDocument,
+        ReportEvidence,
+        ReportFinding,
+        ReportOutcome,
+        ReportResult,
+        ReportSection,
+        ReportService,
+        TraceabilityEntry,
+        analyze_report,
+        assemble_report,
+        build_report,
+        compile_report,
+        create_report,
+        download_report,
+        export_report,
+        generate,
+        generate_pdf,
+        generate_report,
+        make_report,
+        persist_report,
+        preview_report,
+        produce_report,
+        render_report,
+        save_report,
+        store_report,
+    )

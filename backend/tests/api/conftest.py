@@ -57,7 +57,7 @@ __all__ = [
 
 #: The database the API tests run against.
 TEST_DATABASE_URL: str = os.getenv("TEST_DATABASE_URL") or (
-    "postgresql+psycopg://frs:frs_dev_password@127.0.0.1:55432/financial_research_test"
+    "postgresql+psycopg://frs:frs_dev_password@127.0.0.1:5432/financial_research_test"
 )
 
 #: The heading of the first page of the test document.

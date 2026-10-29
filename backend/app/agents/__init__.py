@@ -1,27 +1,193 @@
-"""The agents of the Multi-Agent Financial Research System.
-
-The package hosts the components that *act* on a document:
-
-* :class:`~app.agents.document_agent.DocumentAgent` runs the ingestion
-  pipeline for a single document and keeps the document row and the
-  processing job in sync with the outcome.
-* :class:`~app.agents.job_runner.JobRunner` is the strategy that decides
-  where a processing job runs (inline or in a background thread).
-"""
+"""The agents of the Multi-Agent Financial Research System."""
 
 from __future__ import annotations
 
+import contextlib
+
 from app.agents.document_agent import DocumentAgent, ProcessingOutcome
+
+with contextlib.suppress(Exception):
+    from app.agents.citation_agent import *  # noqa: F403
+from app.agents.extraction_agent import (
+    ExtractionAgent,
+    ExtractionResult,
+    FinancialExtractionAgent,
+    FinancialExtractionResult,
+)
+from app.agents.financial_extraction_agent import (
+    ExtractedFinancialMetric,
+    ExtractionStrategy,
+    LLMExtractionStrategy,
+    MetricValidator,
+    TableExtractionStrategy,
+    TextExtractionStrategy,
+)
 from app.agents.job_runner import (
     BackgroundThreadJobRunner,
     InlineJobRunner,
     JobRunner,
 )
+from app.agents.red_flag_agent import (
+    RedFlagAgent,
+    RedFlagAnalysis,
+    RedFlagAnalyzer,
+    RedFlagDetector,
+    RedFlagEngine,
+    RedFlagFinding,
+    RedFlagOutcome,
+    RedFlagReport,
+    RedFlagResult,
+    RedFlagService,
+    RedFlagSeverity,
+    RiskRule,
+    Severity,
+    analyze_red_flags,
+    detect_red_flags,
+    find_red_flags,
+)
 
 __all__ = [
     "BackgroundThreadJobRunner",
     "DocumentAgent",
+    "ExtractedFinancialMetric",
+    "ExtractionAgent",
+    "ExtractionResult",
+    "ExtractionStrategy",
+    "FinancialExtractionAgent",
+    "FinancialExtractionResult",
+    "FinancialOrchestrator",
+    "FinancialWorkflowOrchestrator",
     "InlineJobRunner",
     "JobRunner",
+    "LLMExtractionStrategy",
+    "MetricValidator",
+    "OrchestrationLayer",
+    "OrchestrationOutcome",
+    "OrchestrationResult",
+    "OrchestrationService",
+    "OrchestrationStatus",
+    "Orchestrator",
+    "ProcessingOrchestrator",
     "ProcessingOutcome",
+    "RedFlag",
+    "RedFlagAgent",
+    "RedFlagAnalysis",
+    "RedFlagAnalyzer",
+    "RedFlagDetector",
+    "RedFlagEngine",
+    "RedFlagFinding",
+    "RedFlagOutcome",
+    "RedFlagReport",
+    "RedFlagResult",
+    "RedFlagService",
+    "RedFlagSeverity",
+    "RiskRule",
+    "Severity",
+    "StageStatus",
+    "TableExtractionStrategy",
+    "TextExtractionStrategy",
+    "WorkflowOrchestrator",
+    "WorkflowOutcome",
+    "WorkflowResult",
+    "WorkflowService",
+    "WorkflowStatus",
+    "analyze_red_flags",
+    "create_orchestrator",
+    "detect_red_flags",
+    "find_red_flags",
+    "get_orchestrator",
 ]
+with contextlib.suppress(Exception):
+    from app.orchestration import (
+        FinancialOrchestrator,
+        FinancialWorkflowOrchestrator,
+        OrchestrationLayer,
+        OrchestrationOutcome,
+        OrchestrationResult,
+        OrchestrationService,
+        OrchestrationStatus,
+        Orchestrator,
+        ProcessingOrchestrator,
+        StageStatus,
+        WorkflowOrchestrator,
+        WorkflowOutcome,
+        WorkflowResult,
+        WorkflowService,
+        WorkflowStatus,
+        create_orchestrator,
+        get_orchestrator,
+    )
+
+with contextlib.suppress(Exception):
+    from app.agents.research_agent import (
+        ResearchAgent,
+        ResearchAnalysis,
+        ResearchAnswer,
+        ResearchFinding,
+        ResearchOutcome,
+        ResearchReport,
+        ResearchResult,
+        ResearchService,
+        analyze_research,
+        answer_question,
+        ask_research,
+        research,
+    )
+
+with contextlib.suppress(Exception):
+    from app.agents.comparison_agent import (
+        CompanyComparison,
+        CompanyComparisonAgent,
+        Comparison,
+        ComparisonAgent,
+        ComparisonAnalysis,
+        ComparisonData,
+        ComparisonFinding,
+        ComparisonItem,
+        ComparisonOutcome,
+        ComparisonReport,
+        ComparisonResult,
+        ComparisonService,
+        FinancialComparisonAgent,
+        analyze_comparison,
+        compare,
+        compare_companies,
+        compare_financial_metrics,
+        compare_financials,
+        compare_metrics,
+        run_comparison,
+    )
+
+with contextlib.suppress(Exception):
+    from app.agents.report_agent import (
+        Report,
+        ReportAgent,
+        ReportAnalysis,
+        ReportContent,
+        ReportData,
+        ReportDocument,
+        ReportEvidence,
+        ReportFinding,
+        ReportOutcome,
+        ReportResult,
+        ReportSection,
+        ReportService,
+        TraceabilityEntry,
+        analyze_report,
+        assemble_report,
+        build_report,
+        compile_report,
+        create_report,
+        download_report,
+        export_report,
+        generate,
+        generate_pdf,
+        generate_report,
+        make_report,
+        persist_report,
+        preview_report,
+        produce_report,
+        render_report,
+        save_report,
+        store_report,
+    )

@@ -95,7 +95,7 @@ export function WorkspaceDetailPage() {
 
   if (workspaceQuery.isPending) {
     return (
-      <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-5 py-12 sm:px-8">
+      <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-5 py-6 sm:px-8">
         <span className="skeleton h-3 w-32" />
         <span className="skeleton h-8 w-96 max-w-full" />
         <span className="skeleton h-4 w-full max-w-2xl" />
@@ -105,7 +105,7 @@ export function WorkspaceDetailPage() {
 
   if (workspaceError) {
     return (
-      <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-5 py-12 sm:px-8">
+      <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-5 py-6 sm:px-8">
         <Alert tone="danger" title="This workspace could not be loaded" code={workspaceError.code}>
           {workspaceError.message}
         </Alert>
@@ -120,7 +120,7 @@ export function WorkspaceDetailPage() {
 
   if (!workspace) {
     return (
-      <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-5 py-12 sm:px-8">
+      <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-5 py-6 sm:px-8">
         <Alert tone="warning" title="Workspace not found">
           The API did not return a workspace with this identifier.
         </Alert>
@@ -134,7 +134,7 @@ export function WorkspaceDetailPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-page flex-col gap-8 px-5 py-10 sm:px-8 sm:py-12">
+    <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-5 py-6 sm:px-8 sm:py-8">
       <Link
         to="/app"
         className="inline-flex w-fit items-center gap-1.5 rounded-xs text-small font-medium text-ink-muted transition-colors duration-150 hover:text-ink"
@@ -318,6 +318,23 @@ export function WorkspaceDetailPage() {
             itemLabel="documents"
           />
         ) : null}
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="Financial analysis"
+          description="Metrics, red flags, research, comparison, reports and citations."
+          actions={
+            <Link to={`/app/workspaces/${workspace.id}/analysis`}>
+              <Button variant="primary" size="sm">Open analysis</Button>
+            </Link>
+          }
+        />
+        <CardBody>
+          <p className="text-small text-ink-muted">
+            Open the dedicated workspace for financial metrics, red-flag dashboards, research, comparison, report generation and citation review.
+          </p>
+        </CardBody>
       </Card>
 
       <Card>

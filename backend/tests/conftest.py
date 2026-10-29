@@ -41,13 +41,17 @@ __all__ = [
 
 #: The database used by the integration tests.
 TEST_DATABASE_URL: str = os.getenv("TEST_DATABASE_URL") or (
-    "postgresql+psycopg://frs:frs_dev_password@127.0.0.1:55432/financial_research_test"
+    "postgresql+psycopg://frs:frs_dev_password@127.0.0.1:5432/financial_research_test"
 )
 
 #: Tables that are emptied before and after every integration test.
 #: The order follows the foreign keys; ``CASCADE`` takes care of the tables
 #: that are not listed.
 TRUNCATE_TABLES: tuple[str, ...] = (
+    "red_flag_findings",
+    "financial_metrics",
+    "financial_calculations",
+    "agent_runs",
     "document_chunks",
     "processing_jobs",
     "documents",

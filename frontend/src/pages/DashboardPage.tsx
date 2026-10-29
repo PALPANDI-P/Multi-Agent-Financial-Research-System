@@ -109,7 +109,7 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-page flex-col gap-10 px-5 py-10 sm:px-8 sm:py-14">
+    <div className="mx-auto flex w-full max-w-page flex-col gap-6 px-5 py-6 sm:px-8 sm:py-8">
       <PageHeader
         eyebrow="Research workspace"
         title="Research workspaces"

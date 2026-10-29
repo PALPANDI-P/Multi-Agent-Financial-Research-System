@@ -332,7 +332,7 @@ class FakeEmbeddingSource:
 def settings(tmp_path: Path) -> Settings:
     """Return the settings of the unit test."""
     return Settings(
-        database_url="postgresql+psycopg://frs:frs@127.0.0.1:55432/financial_research_test",
+        database_url="postgresql+psycopg://frs:frs@127.0.0.1:5432/financial_research_test",
         app_env="test",
         storage_root=tmp_path / "storage",
     )
