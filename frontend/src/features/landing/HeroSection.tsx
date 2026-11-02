@@ -36,23 +36,23 @@ export function HeroSection({ workspaceHref, isAuthenticated = false }: HeroSect
         className="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[26rem] bg-gradient-to-b from-brand-50/70 to-transparent"
       />
 
-      <div className="relative mx-auto grid w-full max-w-page gap-16 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:items-center lg:gap-16 lg:py-28">
+      <div className="relative mx-auto grid w-full max-w-page gap-8 px-5 py-10 sm:px-8 sm:py-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:items-center lg:gap-10 lg:py-16">
         <div className="anim-rise min-w-0">
           <p className="flex items-center gap-2.5 text-micro font-semibold tracking-[0.16em] text-brand-700 uppercase">
             <span aria-hidden="true" className="h-px w-6 bg-brand-300" />
             Retrieval and evidence foundation
           </p>
 
-          <h1 className="mt-7 max-w-[15ch] font-display text-hero text-balance text-ink">
+          <h1 className="mt-4 max-w-[15ch] font-display text-hero text-balance text-ink">
             Every passage, anchored to a page.
           </h1>
 
-          <p className="mt-7 max-w-[46ch] text-subtitle leading-relaxed font-normal text-ink-muted">
+          <p className="mt-4 max-w-[46ch] text-subtitle leading-relaxed font-normal text-ink-muted">
             Upload a filing, let the pipeline extract, chunk and embed it, then retrieve the exact
             passage — with its document, page range and section heading.
           </p>
 
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link
               to={isAuthenticated ? workspaceHref : '/login'}
               className="inline-flex h-11 items-center justify-center gap-2 rounded-control bg-brand-solid px-5 text-body font-semibold text-on-accent shadow-[0_1px_2px_rgb(0_0_0/0.10)] transition-[background-color,transform] duration-150 ease-out-soft hover:bg-brand-solid-hover active:translate-y-px"
@@ -70,7 +70,7 @@ export function HeroSection({ workspaceHref, isAuthenticated = false }: HeroSect
 
           {/* The facts read as a single line of technical provenance, not as
               four competing badges. */}
-          <ul className="mt-12 grid grid-cols-1 gap-x-6 gap-y-2 border-t border-line-faint pt-5 sm:grid-cols-2">
+          <ul className="mt-8 grid grid-cols-1 gap-x-6 gap-y-2 border-t border-line-faint pt-5 sm:grid-cols-2">
             {FACTS.map((fact) => (
               <li key={fact} className="font-mono text-caption text-ink-subtle">
                 {fact}

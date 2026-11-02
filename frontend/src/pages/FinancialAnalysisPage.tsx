@@ -9,6 +9,8 @@ import {
   ReportGenerator,
   CitationEvidenceViewer,
   ProcessingStatusTracker,
+  ForecastPanel,
+  ExportPanel,
 } from '../features/financial'
 
 export function FinancialAnalysisPage() {
@@ -16,7 +18,7 @@ export function FinancialAnalysisPage() {
   const workspaceId = params.id ?? ''
 
   return (
-    <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-5 py-6 sm:px-8 sm:py-8">
+    <div className="mx-auto flex w-full max-w-page flex-col gap-3 px-5 py-4 sm:px-8 sm:py-6">
       <Link
         to={`/app/workspaces/${workspaceId}`}
         className="inline-flex w-fit items-center gap-1.5 rounded-xs text-small font-medium text-ink-muted transition-colors duration-150 hover:text-ink"
@@ -33,6 +35,8 @@ export function FinancialAnalysisPage() {
       <ProcessingStatusTracker workspaceId={workspaceId} />
       <FinancialMetricsPanel workspaceId={workspaceId} />
       <RedFlagDashboard workspaceId={workspaceId} />
+      <ForecastPanel workspaceId={workspaceId} />
+      <ExportPanel workspaceId={workspaceId} />
       <ResearchInterface workspaceId={workspaceId} />
       <ComparisonInterface workspaceId={workspaceId} />
       <ReportGenerator workspaceId={workspaceId} />
@@ -40,4 +44,3 @@ export function FinancialAnalysisPage() {
     </div>
   )
 }
-

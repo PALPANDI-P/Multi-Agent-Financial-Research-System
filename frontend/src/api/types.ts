@@ -396,3 +396,37 @@ export interface ReportRequestPayload {
 
 export type FinancialAgentResult = Record<string, unknown>
 
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export interface ForecastObservation {
+  period: string
+  value: number
+}
+
+export interface ForecastResult {
+  method: string
+  historical: { period: any; value: any }[]
+  forecast: { period: any; value: any; lower?: any; upper?: any }[]
+  assumptions: string[]
+  limitations: string[]
+  evaluation: any
+}
+
+export interface ForecastRequestPayload {
+  observations?: ForecastObservation[]
+  metric_name?: string
+  metric_type?: string
+  horizon?: number
+  method?: string
+  scenario?: boolean
+  adjustments?: any
+}
+
+export interface ExportRequestPayload {
+  format: 'csv' | 'json' | 'xlsx' | 'pdf'
+  data_type: 'metrics' | 'calculations' | 'red_flags' | 'forecast'
+  metric_type?: string
+  document_id?: string
+}
+
+/* eslint-enable @typescript-eslint/no-explicit-any */

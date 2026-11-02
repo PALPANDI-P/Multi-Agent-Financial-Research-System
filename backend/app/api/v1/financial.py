@@ -29,6 +29,8 @@ from app.core.exceptions import NotFoundError
 from app.repositories.financial_calculation_repository import FinancialCalculationRepository
 from app.repositories.financial_metric_repository import FinancialMetricRepository
 from app.repositories.red_flag_finding_repository import RedFlagFindingRepository
+from app.services.export_service import ExportService
+from app.services.forecasting_service import ForecastingService
 from app.services.workspace_service import WorkspaceService
 
 __all__ = ["router"]
@@ -784,3 +786,378 @@ def validate_citation_endpoint(payload: dict) -> dict:
     except Exception as exc:
         return {"valid": False, "errors": [str(exc)]}
 
+
+
+def _normalize_period_value(value: Any) -> str:
+    if isinstance(value, datetime):
+        try:
+            return value.isoformat()
+        except Exception:
+            return str(value)
+    return str(value).strip()
+
+
+def _metric_period(metric: Any) -> str | None:
+    context = getattr(metric, "context", None)
+    if isinstance(context, dict):
+        for key in ("reporting_period", "reportingPeriod", "period", "fiscal_period", "fiscalPeriod"):
+            value = context.get(key)
+            if value is not None:
+                return _normalize_period_value(value)
+    for attr in ("reporting_period", "period", "fiscal_period"):
+        value = getattr(metric, attr, None)
+        if value is not None:
+            return _normalize_period_value(value)
+    for attr in ("extracted_at", "created_at", "updated_at"):
+        value = getattr(metric, attr, None)
+        if value is not None:
+            return _normalize_period_value(value)
+    return None
+
+
+class ForecastRequest(_Base):
+    observations: list[Any] | None = None
+    metric_name: str | None = None
+    metric: str | None = None
+    metric_type: str | None = None
+    type: str | None = None
+    horizon: int = 1
+    method: str = "naive"
+    scenario: bool = False
+    scenarios: bool = False
+    adjustments: Any = None
+
+
+class ExportRequest(_Base):
+    format: str = "csv"
+    fmt: str | None = None
+    data_type: str = "metrics"
+    type: str | None = None
+    metric_type: str | None = None
+    metric_name: str | None = None
+    calculation_type: str | None = None
+    severity: str | None = None
+    status: str | None = None
+    document_id: UUID | None = None
+    limit: int | None = None
+    offset: int | None = None
+    observations: list[Any] | None = None
+    horizon: int | None = None
+    method: str | None = None
+    scenario: bool = False
+    scenarios: bool = False
+    adjustments: Any = None
+    filename: str | None = None
+    name: str | None = None
+    title: str | None = None
+    columns: list[Any] | None = None
+    headers: list[Any] | None = None
+    filters: dict[str, Any] | None = None
+    forecast: dict[str, Any] | None = None
+    forecast_params: dict[str, Any] | None = None
+
+
+def _load_forecast_observations(
+    workspace_id: UUID, payload: ForecastRequest, session_factory: Callable[[], Session]
+) -> tuple[list[dict[str, Any]], int, str]:
+    observations = payload.observations
+    if observations:
+        metric_label = payload.metric_name or payload.metric or payload.metric_type or payload.type or "financial_metric"
+        return [dict(item) if isinstance(item, dict) else item for item in observations], len(observations), metric_label
+
+    metric_name = payload.metric_name or payload.metric
+    metric_type = payload.metric_type or payload.type
+
+    with session_factory() as session:
+        rows = FinancialMetricRepository(session).list_by_workspace(workspace_id, limit=100000, offset=0)
+
+    if metric_type is not None:
+        rows = [row for row in rows if row.metric_type == metric_type]
+    if metric_name is not None:
+        rows = [row for row in rows if row.metric_name == metric_name]
+
+    by_period: dict[str, tuple[Any, float]] = {}
+    for row in rows:
+        period = _metric_period(row)
+        if not period:
+            continue
+        candidate = getattr(row, "extracted_at", None) or getattr(row, "created_at", None)
+        existing = by_period.get(period)
+        if existing is None or (candidate or datetime.min) >= (existing[0] or datetime.min):
+            try:
+                value = float(row.metric_value)
+            except (TypeError, ValueError):
+                value = row.metric_value
+            by_period[period] = (candidate, value)
+
+    obs_list = [{"period": period, "value": value} for period, (_, value) in sorted(by_period.items(), key=lambda item: item[0])]
+    metric_label = metric_name or metric_type or "financial_metric"
+    return obs_list, len(rows), metric_label
+
+
+@router.post("/workspaces/{workspace_id}/forecasts", response_model=dict)
+@router.post("/workspaces/{workspace_id}/forecast", response_model=dict)
+@router.post("/workspaces/{workspace_id}/forecasting", response_model=dict)
+@router.post("/workspaces/{workspace_id}/forecast-agent", response_model=dict)
+@router.post("/workspaces/{workspace_id}/forecast_agent", response_model=dict)
+def run_forecast_endpoint(
+    workspace_id: UUID,
+    payload: ForecastRequest,
+    session_factory: Annotated[Callable[[], Session], Depends(get_session_factory)],
+    workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)],
+    current_user: CurrentUserDep,
+) -> dict:
+    _verify_workspace(workspace_id, workspace_service, current_user)
+    try:
+        observations, source_count, metric_label = _load_forecast_observations(workspace_id, payload, session_factory)
+        horizon = payload.horizon if payload.horizon is not None else 1
+        method = payload.method or "naive"
+        scenario = bool(payload.scenario or payload.scenarios)
+        if scenario:
+            result = ForecastingService.scenario_analysis(observations, horizon, payload.adjustments)
+        else:
+            result = ForecastingService.forecast(observations, horizon, method)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+    if isinstance(result, dict):
+        result = dict(result)
+        result.setdefault("metric", metric_label)
+        result.setdefault("source_count", source_count)
+        if "limitations" not in result:
+            result["limitations"] = []
+        result.setdefault("metadata", {})
+        if isinstance(result["metadata"], dict):
+            result["metadata"].setdefault("metric", metric_label)
+            result["metadata"].setdefault("source_count", source_count)
+            result["metadata"].setdefault("limitations", result.get("limitations", []))
+    return result
+
+
+def _default_export_columns(data_type: str) -> list[str]:
+    if data_type == "metrics":
+        return list(FinancialMetricRead.model_fields.keys())
+    if data_type == "calculations":
+        return list(FinancialCalculationRead.model_fields.keys())
+    if data_type == "red_flags":
+        return list(RedFlagFindingRead.model_fields.keys())
+    if data_type == "forecast":
+        return ["period", "value", "lower", "upper"]
+    return []
+
+
+def _build_export_rows(
+    workspace_id: UUID, req: ExportRequest, session_factory: Callable[[], Session]
+) -> tuple[str, str, list[dict[str, Any]], list[Any], str, ExportRequest]:
+    fmt = (req.format or req.fmt or "csv").lower()
+    if fmt in ("xls", "excel"):
+        fmt = "xlsx"
+
+    if isinstance(req.filters, dict):
+        for _key, _value in req.filters.items():
+            if hasattr(req, _key):
+                setattr(req, _key, _value)
+    for _container in (req.forecast, req.forecast_params):
+        if isinstance(_container, dict):
+            for _key, _value in _container.items():
+                if hasattr(req, _key):
+                    setattr(req, _key, _value)
+
+    data_type = (req.data_type or req.type or "metrics").lower()
+    if data_type in ("metric",):
+        data_type = "metrics"
+    elif data_type in ("calculation",):
+        data_type = "calculations"
+    elif data_type in ("red_flag", "red-flags", "red_flag_findings", "red-flag-findings", "finding", "findings"):
+        data_type = "red_flags"
+    elif data_type in ("forecast", "forecasts"):
+        data_type = "forecast"
+
+    limit = req.limit if req.limit is not None else 1000
+    offset = req.offset if req.offset is not None else 0
+
+    if data_type == "metrics":
+        metric_type = req.metric_type
+        metric_name = req.metric_name
+        document_id = req.document_id
+        with session_factory() as session:
+            repo = FinancialMetricRepository(session)
+            if document_id is not None:
+                rows_db = repo.list_by_document(document_id, limit=limit, offset=offset)
+            else:
+                rows_db = repo.list_by_workspace(workspace_id, limit=limit, offset=offset)
+        if metric_type is not None:
+            rows_db = [row for row in rows_db if row.metric_type == metric_type]
+        if metric_name is not None:
+            rows_db = [row for row in rows_db if row.metric_name == metric_name]
+        rows = [_metric_to_read(row).model_dump() for row in rows_db]
+    elif data_type == "calculations":
+        calculation_type = req.calculation_type
+        with session_factory() as session:
+            repo = FinancialCalculationRepository(session)
+            rows_db = repo.list_by_workspace(workspace_id, calculation_type=calculation_type, limit=limit, offset=offset)
+        rows = [_calc_to_read(row).model_dump() for row in rows_db]
+    elif data_type == "red_flags":
+        severity = req.severity
+        status = req.status
+        document_id = req.document_id
+        with session_factory() as session:
+            repo = RedFlagFindingRepository(session)
+            if document_id is not None:
+                rows_db = repo.list_by_document(document_id, severity=severity, status=status, limit=limit, offset=offset)
+            else:
+                rows_db = repo.list_by_workspace(workspace_id, severity=severity, status=status, limit=limit, offset=offset)
+        rows = [_finding_to_read(row).model_dump() for row in rows_db]
+    elif data_type == "forecast":
+        forecast_request = ForecastRequest(
+            observations=req.observations,
+            metric_name=req.metric_name,
+            metric_type=req.metric_type,
+            horizon=req.horizon if req.horizon is not None else 1,
+            method=req.method or "naive",
+            scenario=bool(req.scenario or req.scenarios),
+            adjustments=req.adjustments,
+        )
+        observations, _, _ = _load_forecast_observations(workspace_id, forecast_request, session_factory)
+        horizon = req.horizon if req.horizon is not None else 1
+        if req.scenario or req.scenarios:
+            result = ForecastingService.scenario_analysis(observations, horizon, req.adjustments)
+            forecast_list = result.get("baseline", {}).get("forecast", []) if isinstance(result, dict) else []
+        else:
+            result = ForecastingService.forecast(observations, horizon, req.method or "naive")
+            forecast_list = result.get("forecast", []) if isinstance(result, dict) else []
+        rows = []
+        for item in forecast_list:
+            if isinstance(item, dict):
+                rows.append(
+                    {
+                        "period": item.get("period"),
+                        "value": item.get("value"),
+                        "lower": item.get("lower"),
+                        "upper": item.get("upper"),
+                    }
+                )
+            else:
+                rows.append({"period": getattr(item, "period", None), "value": getattr(item, "value", None)})
+    else:
+        raise ValueError("invalid data_type")
+
+    columns = req.columns or req.headers
+    if not columns:
+        columns = _default_export_columns(data_type)
+
+    filename = req.filename or req.name
+    if not filename:
+        filename = f"{data_type}_export.{fmt}"
+
+    return data_type, fmt, rows, columns, filename, req
+
+
+def _do_export(
+    workspace_id: UUID,
+    req: ExportRequest,
+    session_factory: Callable[[], Session],
+    workspace_service: WorkspaceService,
+    current_user: Any,
+) -> Response:
+    _verify_workspace(workspace_id, workspace_service, current_user)
+
+    fmt = (req.format or req.fmt or "csv").lower()
+    if fmt in ("xls", "excel"):
+        fmt = "xlsx"
+    if fmt not in ("csv", "json", "xlsx", "pdf"):
+        raise HTTPException(status_code=422, detail="invalid format")
+
+    try:
+        data_type, fmt, rows, columns, filename, req = _build_export_rows(workspace_id, req, session_factory)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from None
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+    try:
+        if fmt == "csv":
+            result = ExportService.export_csv(rows, columns, filename=filename)
+        elif fmt == "json":
+            result = ExportService.export_json(rows, filename=filename)
+        elif fmt == "xlsx":
+            result = ExportService.export_xlsx({str(data_type): (columns, rows)}, filename=filename)
+        else:
+            title = req.title or f"{data_type} export"
+            body_rows = [list(columns)] + [
+                [row.get(column) if isinstance(row, dict) else row for column in columns]
+                for row in rows
+            ]
+            sections = [{"title": title, "rows": body_rows}]
+            result = ExportService.export_pdf(title, sections, filename=filename)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from None
+
+    if result is None:
+        raise HTTPException(status_code=422, detail="export format unavailable") from None
+
+    return Response(
+        content=result.bytes,
+        media_type=result.content_type,
+        headers={"Content-Disposition": f'attachment; filename="{result.filename}"'},
+    )
+
+
+@router.post("/workspaces/{workspace_id}/exports", response_class=Response)
+@router.post("/workspaces/{workspace_id}/export", response_class=Response)
+@router.post("/workspaces/{workspace_id}/exports/download", response_class=Response)
+@router.post("/workspaces/{workspace_id}/export/download", response_class=Response)
+def export_workspace_data(
+    workspace_id: UUID,
+    payload: ExportRequest,
+    session_factory: Annotated[Callable[[], Session], Depends(get_session_factory)],
+    workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)],
+    current_user: CurrentUserDep,
+) -> Response:
+    return _do_export(workspace_id, payload, session_factory, workspace_service, current_user)
+
+
+@router.get("/workspaces/{workspace_id}/exports", response_class=Response)
+@router.get("/workspaces/{workspace_id}/export", response_class=Response)
+@router.get("/workspaces/{workspace_id}/exports/download", response_class=Response)
+def export_workspace_data_get(
+    workspace_id: UUID,
+    session_factory: Annotated[Callable[[], Session], Depends(get_session_factory)],
+    workspace_service: Annotated[WorkspaceService, Depends(get_workspace_service)],
+    current_user: CurrentUserDep,
+    format: str = Query(default="csv"),
+    data_type: str = Query(default="metrics"),
+    metric_type: str | None = Query(default=None),
+    metric_name: str | None = Query(default=None),
+    calculation_type: str | None = Query(default=None),
+    severity: str | None = Query(default=None),
+    status: str | None = Query(default=None),
+    document_id: UUID | None = Query(default=None),
+    limit: int | None = Query(default=None),
+    offset: int | None = Query(default=None),
+    horizon: int | None = Query(default=None),
+    method: str | None = Query(default=None),
+    scenario: bool = Query(default=False),
+    filename: str | None = Query(default=None),
+    title: str | None = Query(default=None),
+) -> Response:
+    req = ExportRequest(
+        format=format,
+        data_type=data_type,
+        metric_type=metric_type,
+        metric_name=metric_name,
+        calculation_type=calculation_type,
+        severity=severity,
+        status=status,
+        document_id=document_id,
+        limit=limit,
+        offset=offset,
+        horizon=horizon,
+        method=method,
+        scenario=scenario,
+        filename=filename,
+        title=title,
+    )
+    return _do_export(workspace_id, req, session_factory, workspace_service, current_user)

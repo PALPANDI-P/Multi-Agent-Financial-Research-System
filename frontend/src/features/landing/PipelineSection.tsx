@@ -70,7 +70,7 @@ function stepNumber(index: number): string {
 export function PipelineSection() {
   return (
     <section id="pipeline" className="border-b border-line bg-canvas scroll-mt-20">
-      <div className="mx-auto w-full max-w-page px-5 py-20 sm:px-8 sm:py-28">
+      <div className="mx-auto w-full max-w-page px-5 py-12 sm:px-8 sm:py-16">
         <SectionIntro
           eyebrow="How it works"
           title="The ingestion pipeline"
@@ -84,7 +84,7 @@ export function PipelineSection() {
         />
 
         {/* The strip: the seven stages at a glance. */}
-        <ol className="mt-16 grid grid-cols-2 gap-x-6 gap-y-8 overflow-hidden sm:grid-cols-4 lg:grid-cols-7">
+        <ol className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8 overflow-hidden sm:grid-cols-4 lg:grid-cols-7">
           {PIPELINE_STEPS.map((step, index) => (
             <li key={step.id} className="relative">
               {index < PIPELINE_STEPS.length - 1 ? (
@@ -108,11 +108,11 @@ export function PipelineSection() {
         {/* The detail of every stage, as a reading list rather than a wall of
             boxes: the stage keeps its number and title on the left, the
             explanation is set to a reading measure on the right. */}
-        <ol className="mt-16 border-t border-line">
+        <ol className="mt-8 border-t border-line">
           {PIPELINE_STEPS.map((step, index) => (
             <li
               key={step.id}
-              className="grid gap-x-12 gap-y-3 border-b border-line py-7 transition-colors duration-200 hover:bg-surface-muted/40 lg:grid-cols-[17rem_minmax(0,1fr)] lg:py-9"
+              className="grid gap-x-12 gap-y-3 border-b border-line py-5 transition-colors duration-200 hover:bg-surface-muted/40 lg:grid-cols-[17rem_minmax(0,1fr)] lg:py-7"
             >
               <div className="flex items-baseline gap-3.5">
                 <span className="font-mono text-micro text-brand-700 tabular-nums">

@@ -1,4 +1,4 @@
-﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   analyzeRedFlags,
   createFinancialMetric,
@@ -10,11 +10,13 @@ import {
   listFinancialMetrics,
   listRedFlagFindings,
   runComparison,
+  runExport,
+  runForecast,
   runResearch,
   updateRedFlagFinding,
   validateCitation,
 } from '../api/financial'
-import type { FinancialAgentResult } from '../api/types'
+import type { FinancialAgentResult, ForecastResult } from '../api/types'
 
 export const financialKeys = {
   all: ['financial'] as const,
@@ -129,6 +131,19 @@ export function useGenerateReport(workspaceId: string) {
 export function useValidateCitation() {
   return useMutation({
     mutationFn: (payload: Record<string, unknown>) => validateCitation(payload),
+  })
+}
+
+
+export function useForecast(workspaceId: string) {
+  return useMutation<ForecastResult, unknown, Parameters<typeof runForecast>[1]>({
+    mutationFn: (payload) => runForecast(workspaceId, payload),
+  })
+}
+
+export function useExport(workspaceId: string) {
+  return useMutation<Blob, unknown, Parameters<typeof runExport>[1]>({
+    mutationFn: (payload) => runExport(workspaceId, payload),
   })
 }
 

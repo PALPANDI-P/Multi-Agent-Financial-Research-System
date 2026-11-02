@@ -10,7 +10,7 @@ export function ScenariosSection() {
 
   return (
     <section id="scenarios" className="border-b border-line bg-canvas scroll-mt-20">
-      <div className="mx-auto w-full max-w-wide px-5 py-20 sm:px-8 sm:py-28">
+      <div className="mx-auto w-full max-w-wide px-5 py-12 sm:px-8 sm:py-16">
         <SectionIntro
           eyebrow="Who it is for"
           title="Three analyst personas"
@@ -24,7 +24,7 @@ export function ScenariosSection() {
         />
 
         {scenariosQuery.isPending ? (
-          <div className="mt-16 grid gap-5 lg:grid-cols-3">
+          <div className="mt-8 grid gap-5 lg:grid-cols-3">
             {[0, 1, 2].map((index) => (
               <div
                 key={index}
@@ -40,7 +40,7 @@ export function ScenariosSection() {
         ) : null}
 
         {error ? (
-          <div className="mt-12">
+          <div className="mt-6">
             <Alert
               tone="warning"
               title="The analyst scenarios could not be loaded"
@@ -61,7 +61,7 @@ export function ScenariosSection() {
         ) : null}
 
         {!scenariosQuery.isPending && !error && scenarios.length === 0 ? (
-          <div className="mt-12 rounded-card border border-dashed border-line-strong bg-surface px-6 py-12 text-center">
+          <div className="mt-6 rounded-card border border-dashed border-line-strong bg-surface px-6 py-12 text-center">
             <p className="text-subtitle text-ink">No scenarios are configured</p>
             <p className="mt-2 text-small text-ink-muted">
               The API answered with an empty list of analyst scenarios.
@@ -70,7 +70,7 @@ export function ScenariosSection() {
         ) : null}
 
         {scenarios.length > 0 ? (
-          <ul className="mt-16 grid gap-6 lg:grid-cols-3">
+          <ul className="mt-8 grid gap-6 lg:grid-cols-3">
             {scenarios.map((scenario) => (
               <li key={scenario.key} className="h-full">
                 <article className="flex h-full flex-col gap-4 rounded-card border border-line bg-surface p-6 shadow-card card-interactive sm:p-7">

@@ -103,7 +103,7 @@ export function HeroVisual() {
                 </li>
               ))}
             </ol>
-            <p className="mt-4 border-t border-line-faint pt-3 font-mono text-micro text-ink-subtle">
+            <p className="mt-3 border-t border-line-faint pt-3 font-mono text-micro text-ink-subtle">
               384-dim · HNSW
             </p>
           </div>
@@ -172,7 +172,7 @@ export function HeroVisual() {
         </div>
       </div>
 
-      <p className="mt-8 text-center font-mono text-micro text-ink-subtle">
+      <p className="mt-3 text-center font-mono text-micro text-ink-subtle">
         field layout of one search hit — every value above is returned by the search API
       </p>
     </div>

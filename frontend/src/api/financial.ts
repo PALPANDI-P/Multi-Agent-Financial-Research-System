@@ -15,6 +15,9 @@ import type {
   ResearchRequestPayload,
   ComparisonRequestPayload,
   ReportRequestPayload,
+  ForecastRequestPayload,
+  ForecastResult,
+  ExportRequestPayload,
 } from './types'
 
 function enc(value: string): string {
@@ -240,5 +243,31 @@ export function validateCitation(
     method: 'POST',
     body: payload,
     signal,
+  })
+}
+
+
+export function runForecast(
+  workspaceId: string,
+  payload: ForecastRequestPayload,
+  signal?: AbortSignal,
+): Promise<ForecastResult> {
+  return request<ForecastResult>(`/workspaces/${enc(workspaceId)}/forecasts`, {
+    method: 'POST',
+    body: payload,
+    signal,
+  })
+}
+
+export function runExport(
+  workspaceId: string,
+  payload: ExportRequestPayload,
+  signal?: AbortSignal,
+): Promise<Blob> {
+  return request<Blob>(`/workspaces/${enc(workspaceId)}/exports`, {
+    method: 'POST',
+    body: payload,
+    signal,
+    responseType: 'blob',
   })
 }

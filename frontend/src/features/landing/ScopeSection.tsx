@@ -21,7 +21,7 @@ const NOT_YET_AVAILABLE = [
 export function ScopeSection() {
   return (
     <section id="scope" className="border-b border-line bg-surface-sunken scroll-mt-20">
-      <div className="mx-auto w-full max-w-page px-5 py-20 sm:px-8 sm:py-28">
+      <div className="mx-auto w-full max-w-page px-5 py-12 sm:px-8 sm:py-16">
         <SectionIntro
           eyebrow="Current scope"
           title="What exists, and what does not"
@@ -34,7 +34,7 @@ export function ScopeSection() {
           }
         />
 
-        <div className="mt-16 grid gap-6 lg:grid-cols-2">
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
           <article className="flex h-full flex-col gap-5 rounded-card border border-line bg-surface p-6 shadow-card sm:p-8">
             <div className="flex items-center gap-3">
               <span

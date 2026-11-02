@@ -32,6 +32,7 @@ export interface RequestOptions {
   query?: Record<string, QueryValue>
   signal?: AbortSignal
   headers?: Record<string, string>
+  responseType?: 'json' | 'blob' | 'text'
 }
 
 export interface UploadOptions {
@@ -184,10 +185,11 @@ async function readErrorResponse(response: Response): Promise<ApiError> {
  *   error envelope.
  */
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, query, signal, headers } = options
+  const { method = 'GET', body, query, signal, headers, responseType = 'json' } = options
   const url = buildUrl(path, query)
 
-  const requestHeaders: Record<string, string> = { Accept: 'application/json', ...headers }
+  const defaultAccept = responseType === 'blob' ? '*/*' : 'application/json'
+  const requestHeaders: Record<string, string> = { Accept: defaultAccept, ...headers }
   let payload: BodyInit | undefined
 
   if (body !== undefined) {
@@ -231,12 +233,26 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   }
 
   if (response.status === 204) {
+    if (responseType === 'blob') {
+      return new Blob() as T
+    }
     return undefined as T
+  }
+
+  if (responseType === 'blob') {
+    return (await response.blob()) as T
   }
 
   const text = await response.text()
   if (!text) {
+    if (responseType === 'text') {
+      return '' as T
+    }
     return undefined as T
+  }
+
+  if (responseType === 'text') {
+    return text as T
   }
 
   try {
@@ -366,4 +382,9 @@ export function describeError(error: unknown): { message: string; code: string }
     return { message: error.message, code: 'unexpected_error' }
   }
   return { message: 'An unexpected error occurred.', code: 'unexpected_error' }
+}
+
+
+export function requestBlob(path: string, options: RequestOptions = {}): Promise<Blob> {
+  return request<Blob>(path, { ...options, responseType: 'blob' })
 }

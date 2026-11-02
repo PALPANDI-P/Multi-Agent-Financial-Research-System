@@ -27,6 +27,16 @@ dev = [
     "httpx>=0.27",
     "ruff>=0.6",
 ]
+export = [
+    "openpyxl>=3.1",
+    "reportlab>=4.0",
+]
+xlsx = [
+    "openpyxl>=3.1",
+]
+pdf = [
+    "reportlab>=4.0",
+]
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -48,6 +58,9 @@ ignore = ["E501"]
 # `migrations/env.py` extends `sys.path` before importing the application
 # package, so its imports are intentionally not at the top of the file.
 "migrations/env.py" = ["E402"]
+"app/agents/__init__.py" = ["F401", "F405"]
+"app/services/__init__.py" = ["F401"]
+"app/api/v1/financial.py" = ["B008"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -45,6 +45,9 @@ with contextlib.suppress(Exception):
     from app.services.citation_service import *  # noqa: F403
 from app.services.workspace_service import WorkspaceService, WorkspaceSummary
 
+with contextlib.suppress(Exception):
+    from app.services.export_service import ExportService
+
 __all__ = [
     "ANONYMOUS_USER",
     "DEMO_SCENARIOS",
@@ -56,6 +59,7 @@ __all__ = [
     "DocumentRegistration",
     "DocumentService",
     "DocumentSummary",
+    "ExportService",
     "FinancialCalculationService",
     "FinancialOrchestrator",
     "FinancialService",

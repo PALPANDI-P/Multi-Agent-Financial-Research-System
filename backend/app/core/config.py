@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -8,7 +9,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core.exceptions import ConfigurationError
 
-import os
 _IS_VERCEL = os.environ.get('VERCEL') is not None
 
 __all__ = [

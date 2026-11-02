@@ -57,7 +57,7 @@ const CAPABILITIES: Capability[] = [
 export function CapabilitiesSection() {
   return (
     <section id="capabilities" className="border-b border-line bg-surface scroll-mt-20">
-      <div className="mx-auto w-full max-w-page px-5 py-20 sm:px-8 sm:py-28">
+      <div className="mx-auto w-full max-w-page px-5 py-12 sm:px-8 sm:py-16">
         <SectionIntro
           eyebrow="What you get"
           title="Evidence, not answers"
@@ -70,7 +70,7 @@ export function CapabilitiesSection() {
           }
         />
 
-        <div className="mt-16 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
           {CAPABILITIES.map((capability, index) => (
             <FeatureCard
               key={capability.title}

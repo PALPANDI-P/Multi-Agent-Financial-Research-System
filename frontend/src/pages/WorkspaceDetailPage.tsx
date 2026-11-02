@@ -134,7 +134,7 @@ export function WorkspaceDetailPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-page flex-col gap-4 px-5 py-6 sm:px-8 sm:py-8">
+    <div className="mx-auto flex w-full max-w-page flex-col gap-3 px-5 py-4 sm:px-8 sm:py-6">
       <Link
         to="/app"
         className="inline-flex w-fit items-center gap-1.5 rounded-xs text-small font-medium text-ink-muted transition-colors duration-150 hover:text-ink"
