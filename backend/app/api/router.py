@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 
 from app.api.deps import require_session
-from app.api.v1 import auth, documents, financial, health, search, workspaces
+from app.api.v1 import auth, chatbot, documents, financial, health, search, workspaces
 
 __all__ = ["api_router"]
 
@@ -28,5 +28,9 @@ api_router.include_router(
 )
 api_router.include_router(
     financial.router,
+    dependencies=[Depends(require_session)],
+)
+api_router.include_router(
+    chatbot.router,
     dependencies=[Depends(require_session)],
 )

@@ -15,6 +15,7 @@ import {
 } from '../components'
 import { ArrowLeftIcon, FilterIcon, PencilIcon, TrashIcon } from '../components/icons'
 import { DocumentList, UploadPanel } from '../features/documents'
+import { ChatbotPanel } from '../features/financial'
 import { SearchPanel } from '../features/search'
 import { DeleteWorkspaceDialog, WorkspaceDialog } from '../features/workspaces'
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
@@ -318,6 +319,16 @@ export function WorkspaceDetailPage() {
             itemLabel="documents"
           />
         ) : null}
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="Document Analyst Chatbot"
+          description="Ask deep questions about revenue, profit, losses, forecasts, risks and market data from your uploaded documents."
+        />
+        <CardBody>
+          <ChatbotPanel workspaceId={workspace.id} documentCount={documentsTotal} />
+        </CardBody>
       </Card>
 
       <Card>

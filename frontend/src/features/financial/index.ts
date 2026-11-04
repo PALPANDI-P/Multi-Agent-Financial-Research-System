@@ -1,3 +1,5 @@
+export { ChatbotPanel } from './ChatbotPanel'
+export type { ChatbotPanelProps } from './ChatbotPanel'
 export { FinancialMetricsPanel } from './FinancialMetricsPanel'
 export type { FinancialMetricsPanelProps } from './FinancialMetricsPanel'
 export { RedFlagDashboard } from './RedFlagDashboard'

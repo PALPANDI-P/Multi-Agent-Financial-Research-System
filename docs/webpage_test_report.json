@@ -1,0 +1,173 @@
+{
+  "started_at": "2026-11-04T19:08:43.746Z",
+  "steps": [
+    {
+      "name": "Landing Page",
+      "status": "PASSED",
+      "details": "Loaded successfully",
+      "time": "2026-11-04T19:08:46.059Z"
+    },
+    {
+      "name": "Authentication",
+      "status": "PASSED",
+      "details": "Signed in successfully to analyst session",
+      "time": "2026-11-04T19:08:50.928Z"
+    },
+    {
+      "name": "Dashboard View",
+      "status": "PASSED",
+      "details": "Dashboard loaded cleanly",
+      "time": "2026-11-04T19:08:53.454Z"
+    },
+    {
+      "name": "Workspace Creation/Selection",
+      "status": "PASSED",
+      "details": "Workspace ID: b3b9783f-5ad3-4c64-b034-12085d3b2f81",
+      "time": "2026-11-04T19:08:59.979Z"
+    },
+    {
+      "name": "Document Ingestion",
+      "status": "PASSED",
+      "details": "Tesla 10-K document uploaded and indexed",
+      "time": "2026-11-04T19:09:17.367Z"
+    },
+    {
+      "name": "Chatbot Q1 (Revenue & Margin)",
+      "status": "PASSED",
+      "details": "Deep numbers and margins extracted",
+      "time": "2026-11-04T19:09:22.435Z"
+    },
+    {
+      "name": "Chatbot Q2 (Profit & Forecasts)",
+      "status": "PASSED",
+      "details": "Profit and forward projections synthesised",
+      "time": "2026-11-04T19:09:25.674Z"
+    },
+    {
+      "name": "Chatbot Q3 (Risks & Market Rate)",
+      "status": "PASSED",
+      "details": "Risk factors and red flags identified",
+      "time": "2026-11-04T19:09:28.917Z"
+    },
+    {
+      "name": "Chatbot Q4 (Project Capabilities)",
+      "status": "PASSED",
+      "details": "Project knowledge answered accurately",
+      "time": "2026-11-04T19:09:32.170Z"
+    },
+    {
+      "name": "Financial Analysis Page",
+      "status": "PASSED",
+      "details": "Loaded financial analysis suite",
+      "time": "2026-11-04T19:09:35.326Z"
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "01_landing_page",
+      "file": "01_landing_page.png",
+      "description": "Public landing page showing platform features",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\01_landing_page.png"
+    },
+    {
+      "name": "02_login_page",
+      "file": "02_login_page.png",
+      "description": "Login page presenting persona scenarios & credentials",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\02_login_page.png"
+    },
+    {
+      "name": "03_login_demo_selected",
+      "file": "03_login_demo_selected.png",
+      "description": "Demo credentials loaded into form",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\03_login_demo_selected.png"
+    },
+    {
+      "name": "04_dashboard_page",
+      "file": "04_dashboard_page.png",
+      "description": "Analyst dashboard showing workspaces and system health",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\04_dashboard_page.png"
+    },
+    {
+      "name": "05_create_workspace_modal",
+      "file": "05_create_workspace_modal.png",
+      "description": "Create workspace modal dialog",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\05_create_workspace_modal.png"
+    },
+    {
+      "name": "06_workspace_detail_view",
+      "file": "06_workspace_detail_view.png",
+      "description": "Workspace detail page with documents list and Document Analyst chatbot",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\06_workspace_detail_view.png"
+    },
+    {
+      "name": "07_document_selected_upload",
+      "file": "07_document_selected_upload.png",
+      "description": "Upload panel with Tesla 10-K document staged",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\07_document_selected_upload.png"
+    },
+    {
+      "name": "08_workspace_document_indexed",
+      "file": "08_workspace_document_indexed.png",
+      "description": "Workspace with ingested and processed financial document",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\08_workspace_document_indexed.png"
+    },
+    {
+      "name": "09_chatbot_panel_ready",
+      "file": "09_chatbot_panel_ready.png",
+      "description": "Document Analyst Chatbot ready for interactive questions",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\09_chatbot_panel_ready.png"
+    },
+    {
+      "name": "10_chatbot_revenue_qa",
+      "file": "10_chatbot_revenue_qa.png",
+      "description": "Chatbot answering revenue ($118.5B) and gross margin (21.4%) with source citations",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\10_chatbot_revenue_qa.png"
+    },
+    {
+      "name": "11_chatbot_profit_forecast_qa",
+      "file": "11_chatbot_profit_forecast_qa.png",
+      "description": "Chatbot answering net profit ($12.6B) and 2026 delivery guidance (2.6M units)",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\11_chatbot_profit_forecast_qa.png"
+    },
+    {
+      "name": "12_chatbot_risks_market_qa",
+      "file": "12_chatbot_risks_market_qa.png",
+      "description": "Chatbot detailing supply chain, regulatory scrutiny, and interest rate sensitivities",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\12_chatbot_risks_market_qa.png"
+    },
+    {
+      "name": "13_chatbot_project_faq_qa",
+      "file": "13_chatbot_project_faq_qa.png",
+      "description": "Chatbot answering project FAQ (PDF format, 50MB size limit, processing workflow)",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\13_chatbot_project_faq_qa.png"
+    },
+    {
+      "name": "14_financial_analysis_dashboard",
+      "file": "14_financial_analysis_dashboard.png",
+      "description": "Financial analysis dashboard with metrics, red flags and forecasts",
+      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\14_financial_analysis_dashboard.png"
+    }
+  ],
+  "chat_results": [
+    {
+      "question": "What was the total revenue reported and gross margin for FY2025?",
+      "answer": "Based on the uploaded documents:\n\n\n\n\nRevenue figures found: $118.5 billion, $98.2 billion, $12.8\n\nbillion\n\n\n\n\nKey findings from the documents:\n\n\n\n\n[Tesla, Inc. - Form 10-K Annual Report (p. 1)] YoY Growth\n\nYoY Growth\n\nTotal Automotive Revenue\n\n$82,419\n\n$80,820\n\n$98,200\n\n+21.5%\n\nEnergy Generation & Storage\n\n$6,035\n\n$8,250\n\n$12,800\n\n+55.2%\n\nTotal Revenues\n\n$96,773\n\n$96,770\n\n$118,500\n\n+22.5%\n\nGross Profit\n\n$17,660\n\n$18,676\n\n$25,359\n\n+35.8%\n\nGross Margin %\n\n18.2%\n\n19.3%\n\n21.4%\n\n+2.1%\n\nOperating Income\n\n$8,891\n\n$8,900\n\n$14,200\n\n+59.6%\n\nNet Income (Profit)\n\n$14,997\n\n$7,100\n\n$12,600\n\n+77.5%\n\nDiluted EPS\n\n$4.30\n\n$2.04\n\n$3.62\n\n+77.5%\n\nFree Cash Flow\n\n$4,358\n\n$3,600\n\n$8,400\n\n+133.3%\n\nItem 7A. Future Predictions, Guidance and Market Outlook\n\nFor fiscal year 2026, management provides the following forward-looking guidance and projections: • …\n\n\n\n\n[Tesla, Inc. - Form 10-K Annual Report (p. 1)] expenses were $11.1 billion, consisting of $4.8 billion in Research and Development (R&D;) and $6.3 billion in\n\nexpenses were $11.1 billion, consisting of $4.8 billion in Research and Development (R&D;) and $6.3 billion in\n\nSelling, General and Administrative (SG&A;) expenses.\n\nFinancial Metric ($ in millions)\n\nFY2023\n\nFY2024\n\nFY2025\n\n\n\n\n[Tesla, Inc. - Form 10-K Annual Report (p. 1)] Tesla, Inc. - Form 10-K Annual Report\n\nTesla, Inc. - Form 10-K Annual Report\n\nFiscal Year Ended December 31, 2025 | SEC File Number: 001-34756\n\nItem 1. Business Overview\n\nTesla designs, develops, manufactures, sells, and leases high-performance fully electric vehicles, energy\n\ngeneration and storage systems, and offers services related to its products. During fiscal year 2025, vehicle\n\ndeliveries reached 2,150,000 units globally, supported by expansion at Gigafactory Texas, Gigafactory\n\nBerlin-Brandenburg, and Gigafactory Shanghai.\n\nItem 7. Management's Discussion and Analysis (MD&A;)\n\nIn fiscal 2025, total revenue was $118.5 billion, …\n\n\n\n\n\n*Answer synthesised from 3 document chunk(s). See the sources below for the original passages.*",
+      "screenshot": "10_chatbot_revenue_qa.png"
+    },
+    {
+      "question": "Did the company report profit or loss, and what are the future flow predictions for 2026?",
+      "answer": "Forecasting\n\n\n\n\nThe Forecasting Service can project future values from a time-series of observations using linear or exponential methods.\n\nThe research chatbot also synthesises forward-looking statements found in the uploaded documents (management guidance, analyst commentary, etc.).",
+      "screenshot": "11_chatbot_profit_forecast_qa.png"
+    },
+    {
+      "question": "What are the key risk factors, red flags, and market rate sensitivities?",
+      "answer": "Red flag analysis\n\n\n\n\nThe Red Flag Agent scans a document for financial warning signals such as:\n\n• Declining margins or revenues\n\n• High debt-to-equity ratios\n\n• Auditor qualifications\n\n• Unusual related-party transactions\n\n• Going-concern disclosures\n\n\n\n\nRed flags are classified as High / Medium / Low severity.",
+      "screenshot": "12_chatbot_risks_market_qa.png"
+    },
+    {
+      "question": "What file formats and file size limits are supported for uploading documents in this project?",
+      "answer": "How to upload a document\n\n\n\n\n1. Open or create a workspace on the Dashboard.\n\n2. Inside the workspace click Upload Document.\n\n3. Select a PDF file from your computer (max 50 MB).\n\n4. Optionally fill in company name, document type and fiscal period metadata.\n\n5. Click Upload – the system validates, extracts, chunks and indexes the document automatically. Status transitions: *queued → validating → extracting → chunking → embedding → indexing → completed*.\n\n\n\n\nOnce status is completed you can search and ask questions about it.",
+      "screenshot": "13_chatbot_project_faq_qa.png"
+    }
+  ]
+}

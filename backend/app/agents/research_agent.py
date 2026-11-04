@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
@@ -10,6 +11,20 @@ from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
 from uuid import UUID
+
+try:
+    from app.services.project_knowledge import project_answer
+except Exception:  # pragma: no cover
+    def project_answer(question: Any) -> str | None:
+        return None
+
+try:
+    from app.services.forecasting_service import ForecastingService
+except Exception:  # pragma: no cover
+    ForecastingService = None
+
+_ORIGINAL_PROJECT_ANSWER = project_answer
+_ORIGINAL_FORECASTING_SERVICE = ForecastingService
 
 __all__ = [
     "ResearchAgent",
@@ -888,6 +903,231 @@ class ResearchAgent:
         question = self._extract_question(*args, **kwargs)
         if question is None:
             question = ""
+        if question:
+            _pa_func = project_answer
+            try:
+                import app.services.project_knowledge as _pk_mod
+
+                _pk_current = getattr(_pk_mod, "project_answer", None)
+                if _pk_current is not None and _pk_current is not _ORIGINAL_PROJECT_ANSWER:
+                    _pa_func = _pk_current
+                elif project_answer is not _ORIGINAL_PROJECT_ANSWER:
+                    _pa_func = project_answer
+                else:
+                    _pa_func = _pk_current or project_answer
+            except Exception:
+                pass
+            try:
+                _pa = _pa_func(question)
+            except Exception:
+                _pa = None
+            if _pa:
+                return ResearchResult(
+                    question=question,
+                    query=question,
+                    research_question=question,
+                    user_question=question,
+                    answer=_pa,
+                    response=_pa,
+                    result=_pa,
+                    final_answer=_pa,
+                    summary=_pa,
+                    text=_pa,
+                    citations=[],
+                    source_citations=[],
+                    sources=[],
+                    references=[],
+                    evidence=[],
+                )
+            _forecast_keywords = (
+                "forecast",
+                "predict",
+                "prediction",
+                "projected",
+                "projection",
+                "future",
+                "trend",
+                "time series",
+                "scenario",
+            )
+            _q_lower = question.lower()
+            if any(keyword in _q_lower for keyword in _forecast_keywords):
+                _fs_resolved = ForecastingService
+                try:
+                    import app.services.forecasting_service as _fs_mod
+
+                    _fs_current = getattr(_fs_mod, "ForecastingService", None)
+                    if _fs_current is not None and _fs_current is not _ORIGINAL_FORECASTING_SERVICE:
+                        _fs_resolved = _fs_current
+                    elif ForecastingService is not _ORIGINAL_FORECASTING_SERVICE and ForecastingService is not None:
+                        _fs_resolved = ForecastingService
+                    else:
+                        _fs_resolved = _fs_current or ForecastingService
+                except Exception:
+                    pass
+                _workspace_id = self._extract_workspace_id(*args, **kwargs)
+                _document_id = self._extract_document_id(*args, **kwargs)
+                _metrics = self._extract_metrics(*args, **kwargs)
+                if _metrics is None:
+                    _repo = getattr(self, "metric_repository", None) or getattr(self, "financial_metric_repository", None)
+                    if _repo is not None:
+                        try:
+                            if _document_id is not None and hasattr(_repo, "list_by_document"):
+                                _metrics = list(_repo.list_by_document(_document_id))
+                            elif _workspace_id is not None and hasattr(_repo, "list_by_workspace"):
+                                _metrics = list(_repo.list_by_workspace(_workspace_id))
+                        except Exception:
+                            _metrics = None
+                    if _metrics is None and (_workspace_id is not None or _document_id is not None):
+                        try:
+                            _lm, _ = self._load_from_db(_workspace_id, _document_id)
+                            _metrics = _lm
+                        except Exception:
+                            _metrics = []
+                    if _metrics is None:
+                        _metrics = []
+                if _metrics is None:
+                    _metrics = []
+                _metrics = _normalize_metrics(_metrics)
+
+                _groups: dict[str, list[dict[str, Any]]] = {}
+                _group_types: dict[str, str] = {}
+                for _m in _metrics or []:
+                    _name = _metric_name(_m)
+                    _key = _name.strip().lower() or "financial_metric"
+                    _period = _metric_period(_m)
+                    _value = _metric_value(_m)
+                    try:
+                        _fvalue = float(_value)
+                    except (TypeError, ValueError):
+                        _fvalue = None
+                    if _period is None or _fvalue is None:
+                        continue
+                    _group_types.setdefault(_key, str(_get(_m, "metric_type", "type", default="") or ""))
+                    _groups.setdefault(_key, [])
+                    _existing_periods = {str(obs.get("period")): idx for idx, obs in enumerate(_groups[_key])}
+                    if str(_period) in _existing_periods:
+                        _groups[_key][_existing_periods[str(_period)]] = {"period": _period, "value": _fvalue}
+                    else:
+                        _groups[_key].append({"period": _period, "value": _fvalue})
+
+                for _key in list(_groups):
+                    with contextlib.suppress(Exception):
+                        _groups[_key].sort(key=lambda o: str(o.get("period")))
+                    for obs in _groups[_key]:
+                        obs["period"] = str(obs["period"])
+                        obs["value"] = float(obs["value"])
+
+                _selected_key: str | None = None
+                for _key in _groups:
+                    _label = _key.replace("_", " ")
+                    if _label and _label in _q_lower:
+                        _selected_key = _key
+                        break
+                    if _key.replace(" ", "") and _key.replace(" ", "") in _q_lower.replace(" ", ""):
+                        _selected_key = _key
+                        break
+                if _selected_key is None:
+                    for _key, _typ in _group_types.items():
+                        if "revenue" in (_key + " " + _typ).lower():
+                            _selected_key = _key
+                            break
+                if _selected_key is None and _groups:
+                    _selected_key = next(iter(_groups))
+
+                _obs = _groups.get(_selected_key, []) if _selected_key else []
+                _metric_label = _selected_key.replace("_", " ").title() if _selected_key else "financial metric"
+
+                if _fs_resolved is None or not _obs:
+                    _guidance = (
+                        "Insufficient data to forecast " + _metric_label + ": "
+                        "no historical observations were found. "
+                        "Please provide or extract financial metrics first."
+                    )
+                    return ResearchResult(
+                        question=question,
+                        query=question,
+                        research_question=question,
+                        user_question=question,
+                        answer=_guidance,
+                        response=_guidance,
+                        result=_guidance,
+                        final_answer=_guidance,
+                        summary=_guidance,
+                        text=_guidance,
+                        citations=[],
+                    )
+
+                try:
+                    try:
+                        _result = _fs_resolved.forecast(_obs, 3, "linear" if len(_obs) >= 3 else "naive")
+                    except TypeError:
+                        try:
+                            _result = _fs_resolved.forecast(_obs, horizon=3, method=("linear" if len(_obs) >= 3 else "naive"))
+                        except TypeError:
+                            _result = _fs_resolved.forecast(_obs)
+                except Exception as _exc:
+                    _guidance = (
+                        "Insufficient data to forecast " + _metric_label + ": "
+                        + str(_exc) + ". "
+                        "Please provide at least 2 historical observations."
+                    )
+                    return ResearchResult(
+                        question=question,
+                        query=question,
+                        research_question=question,
+                        user_question=question,
+                        answer=_guidance,
+                        response=_guidance,
+                        result=_guidance,
+                        final_answer=_guidance,
+                        summary=_guidance,
+                        text=_guidance,
+                        citations=[],
+                    )
+
+                _lines = [f"Forecast for {_metric_label}:"]
+                _lines.append("")
+                _lines.append("Historical:")
+                for o in _result.get("historical", []):
+                    _lines.append(f"- {o.get('period')}: {o.get('value')}")
+                _lines.append("")
+                _lines.append("Forecast:")
+                for o in _result.get("forecast", []):
+                    _extra = ""
+                    if o.get("lower") is not None and o.get("upper") is not None:
+                        _extra = f" (CI: {o.get('lower')} to {o.get('upper')})"
+                    _lines.append(f"- {o.get('period')}: {o.get('value')}{_extra}")
+                _lines.append("")
+                _lines.append("Assumptions:")
+                for a in _result.get("assumptions", []) or ["Observations are ordered chronologically."]:
+                    _lines.append(f"- {a}")
+                _lines.append("")
+                _lines.append("Limitations:")
+                for lim in _result.get("limitations", []) or ["Forecast extrapolates historical patterns."]:
+                    _lines.append(f"- {lim}")
+                _lines.append("")
+                _lines.append("Evaluation:")
+                _eval = _result.get("evaluation")
+                if _eval:
+                    for k, v in _eval.items():
+                        _lines.append(f"- {k}: {v}")
+                else:
+                    _lines.append("- Insufficient data for chronological holdout evaluation.")
+                _answer = "\n".join(_lines)
+                return ResearchResult(
+                    question=question,
+                    query=question,
+                    research_question=question,
+                    user_question=question,
+                    answer=_answer,
+                    response=_answer,
+                    result=_answer,
+                    final_answer=_answer,
+                    summary=_answer,
+                    text=_answer,
+                    citations=[],
+                )
         workspace_id = self._extract_workspace_id(*args, **kwargs)
         document_id = self._extract_document_id(*args, **kwargs)
         metrics = self._extract_metrics(*args, **kwargs)

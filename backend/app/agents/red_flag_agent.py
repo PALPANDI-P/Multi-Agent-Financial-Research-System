@@ -610,8 +610,11 @@ class RedFlagAgent:
 
     def analyze_and_store(self, *args: Any, **kwargs: Any) -> RedFlagResult:
         result = self._analyze(*args, **kwargs)
+        persist_kwargs = dict(kwargs)
+        persist_kwargs.pop("workspace_id", None)
+        persist_kwargs.pop("document_id", None)
         self.persist_findings(result.findings, workspace_id=result.workspace_id,
-                             document_id=result.document_id, **kwargs)
+                              document_id=result.document_id, **persist_kwargs)
         return result
 
     def detect_and_store(self, *args: Any, **kwargs: Any) -> RedFlagResult:
