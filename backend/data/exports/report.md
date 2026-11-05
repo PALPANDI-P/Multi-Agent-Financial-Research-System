@@ -1,0 +1,167 @@
+# Financial Research Report - Annual report
+
+## Executive Summary
+This report integrates 78 financial metrics.
+
+## Financial Metrics
+- Revenue: 30.00 USD
+- Revenue: 15.00 USD
+- Revenue: 2.00 USD
+- Revenue: 6.00 USD
+- Revenue: 2025.00 USD
+- Revenue: 10.00 USD
+- Revenue: 13.00 USD
+- Revenue: 20.00 USD
+- Revenue: 85.00 USD
+- Revenue: 147.80 USD
+- Revenue: 4578.00 USD
+- Revenue: 18103.00 USD
+- Revenue: 42.00 USD
+- Revenue: 31.00 USD
+- Revenue: 31.00 USD
+- Revenue: 2016.00 USD
+- Net Sales: 8.00 USD
+- Net Sales: 31.00 USD
+- Net Sales: 387497.00 USD
+- Net Sales: 61.00 USD
+- Net Sales: 4.40 USD
+- Net Sales: 454.00 USD
+- Net Sales: 142906.00 USD
+- Net Sales: 107556.00 USD
+- Net Sales: 637959.00 USD
+- Net Sales: 9.00 USD
+- Net Sales: 19.00 USD
+- Net Sales: 11.00 USD
+- Net Sales: 22.00 USD
+- Net Sales: 17.00 USD
+- Net Sales: 100.00 USD
+- Net Sales: 4.90 USD
+- Net Sales: 51.10 USD
+- Net Sales: 173.50 USD
+- Net Sales: 23.00 USD
+- Net Sales: 574785.00 USD
+- Net Sales: 352828.00 USD
+- Net Sales: 131200.00 USD
+- Net Sales: 90757.00 USD
+- Net Sales: -1.00 USD
+- Net Sales: 31.00 USD
+- Net Sales: -2.00 USD
+- Net Sales: -3.00 USD
+- Net Sales: -4.00 USD
+- Net Sales: -5.00 USD
+- Net Sales: -6.00 USD
+- Net Income: 30425.00 USD
+- Net Income: 59248.00 USD
+- Net Income: 77670.00 USD
+- Net Income: 1.00 USD
+- Net Income: 31.00 USD
+- Operating Income: 2025.00 USD
+- Operating Income: 31.00 USD
+- Operating Income: 24967.00 USD
+- Operating Income: 68.60 USD
+- Operating Income: 2025.00 USD
+- Operating Income: 25.00 USD
+- Operating Income: 204.00 USD
+- Operating Income: 903.00 USD
+- Operating Income: 341.00 USD
+- Operating Income: 2.00 USD
+- Operating Income: 39834.00 USD
+- Operating Income: 68593.00 USD
+- Operating Income: 16.50 USD
+- Operating Income: 36852.00 USD
+- Operating Income: 705.00 USD
+- Operating Income: 14877.00 USD
+- Operating Income: -2656.00 USD
+- Operating Income: 24631.00 USD
+- Earnings Per Share: 2.95 USD
+- Earnings Per Share: 2.90 USD
+- Earnings Per Share: 10304.00 USD
+- Earnings Per Share: 255887.00 USD
+- Earnings Per Share: 10492.00 USD
+- Total Assets: 624894.00 USD
+- Total Liabilities: 624894.00 USD
+- Cash And Cash Equivalents: 78779.00 USD
+- Operating Cash Flow: 2025.00 USD
+
+## Evidence & Source Citations
+- c6b42ed5-2e09-4edc-9a2e-07646b227d8c: page n/a
+
+## Traceability
+- Revenue: 30.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 15.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 2.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 6.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 2025.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 10.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 13.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 20.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 85.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 147.80 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 4578.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 18103.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 42.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 31.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 31.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Revenue: 2016.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 8.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 31.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 387497.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 61.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 4.40 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 454.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 142906.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 107556.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 637959.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 9.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 19.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 11.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 22.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 17.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 100.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 4.90 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 51.10 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 173.50 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 23.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 574785.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 352828.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 131200.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 90757.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: -1.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: 31.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: -2.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: -3.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: -4.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: -5.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Sales: -6.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Income: 30425.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Income: 59248.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Income: 77670.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Income: 1.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Net Income: 31.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 2025.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 31.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 24967.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 68.60 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 2025.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 25.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 204.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 903.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 341.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 2.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 39834.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 68593.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 16.50 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 36852.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 705.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 14877.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: -2656.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Income: 24631.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Earnings Per Share: 2.95 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Earnings Per Share: 2.90 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Earnings Per Share: 10304.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Earnings Per Share: 255887.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Earnings Per Share: 10492.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Total Assets: 624894.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Total Liabilities: 624894.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Cash And Cash Equivalents: 78779.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
+- Operating Cash Flow: 2025.00 => c6b42ed5-2e09-4edc-9a2e-07646b227d8c
