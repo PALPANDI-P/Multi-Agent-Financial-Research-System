@@ -1,65 +1,65 @@
 {
-  "started_at": "2026-11-04T19:08:43.746Z",
+  "started_at": "2026-11-05T08:42:35.861Z",
   "steps": [
     {
       "name": "Landing Page",
       "status": "PASSED",
       "details": "Loaded successfully",
-      "time": "2026-11-04T19:08:46.059Z"
+      "time": "2026-11-05T08:42:38.352Z"
     },
     {
       "name": "Authentication",
       "status": "PASSED",
       "details": "Signed in successfully to analyst session",
-      "time": "2026-11-04T19:08:50.928Z"
+      "time": "2026-11-05T08:42:43.527Z"
     },
     {
       "name": "Dashboard View",
       "status": "PASSED",
       "details": "Dashboard loaded cleanly",
-      "time": "2026-11-04T19:08:53.454Z"
+      "time": "2026-11-05T08:42:46.199Z"
     },
     {
       "name": "Workspace Creation/Selection",
       "status": "PASSED",
-      "details": "Workspace ID: b3b9783f-5ad3-4c64-b034-12085d3b2f81",
-      "time": "2026-11-04T19:08:59.979Z"
+      "details": "Workspace ID: 6a20eb50-b4e0-4bb2-93c4-e816d54e6357",
+      "time": "2026-11-05T08:42:52.626Z"
     },
     {
       "name": "Document Ingestion",
       "status": "PASSED",
       "details": "Tesla 10-K document uploaded and indexed",
-      "time": "2026-11-04T19:09:17.367Z"
+      "time": "2026-11-05T08:43:10.125Z"
     },
     {
       "name": "Chatbot Q1 (Revenue & Margin)",
       "status": "PASSED",
       "details": "Deep numbers and margins extracted",
-      "time": "2026-11-04T19:09:22.435Z"
+      "time": "2026-11-05T08:43:14.398Z"
     },
     {
       "name": "Chatbot Q2 (Profit & Forecasts)",
       "status": "PASSED",
       "details": "Profit and forward projections synthesised",
-      "time": "2026-11-04T19:09:25.674Z"
+      "time": "2026-11-05T08:43:17.592Z"
     },
     {
       "name": "Chatbot Q3 (Risks & Market Rate)",
       "status": "PASSED",
       "details": "Risk factors and red flags identified",
-      "time": "2026-11-04T19:09:28.917Z"
+      "time": "2026-11-05T08:43:20.758Z"
     },
     {
       "name": "Chatbot Q4 (Project Capabilities)",
       "status": "PASSED",
       "details": "Project knowledge answered accurately",
-      "time": "2026-11-04T19:09:32.170Z"
+      "time": "2026-11-05T08:43:23.917Z"
     },
     {
       "name": "Financial Analysis Page",
       "status": "PASSED",
       "details": "Loaded financial analysis suite",
-      "time": "2026-11-04T19:09:35.326Z"
+      "time": "2026-11-05T08:43:26.947Z"
     }
   ],
   "screenshots": [
@@ -67,85 +67,85 @@
       "name": "01_landing_page",
       "file": "01_landing_page.png",
       "description": "Public landing page showing platform features",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\01_landing_page.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\01_landing_page.png"
     },
     {
       "name": "02_login_page",
       "file": "02_login_page.png",
       "description": "Login page presenting persona scenarios & credentials",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\02_login_page.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\02_login_page.png"
     },
     {
       "name": "03_login_demo_selected",
       "file": "03_login_demo_selected.png",
       "description": "Demo credentials loaded into form",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\03_login_demo_selected.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\03_login_demo_selected.png"
     },
     {
       "name": "04_dashboard_page",
       "file": "04_dashboard_page.png",
       "description": "Analyst dashboard showing workspaces and system health",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\04_dashboard_page.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\04_dashboard_page.png"
     },
     {
       "name": "05_create_workspace_modal",
       "file": "05_create_workspace_modal.png",
       "description": "Create workspace modal dialog",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\05_create_workspace_modal.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\05_create_workspace_modal.png"
     },
     {
       "name": "06_workspace_detail_view",
       "file": "06_workspace_detail_view.png",
       "description": "Workspace detail page with documents list and Document Analyst chatbot",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\06_workspace_detail_view.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\06_workspace_detail_view.png"
     },
     {
       "name": "07_document_selected_upload",
       "file": "07_document_selected_upload.png",
       "description": "Upload panel with Tesla 10-K document staged",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\07_document_selected_upload.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\07_document_selected_upload.png"
     },
     {
       "name": "08_workspace_document_indexed",
       "file": "08_workspace_document_indexed.png",
       "description": "Workspace with ingested and processed financial document",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\08_workspace_document_indexed.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\08_workspace_document_indexed.png"
     },
     {
       "name": "09_chatbot_panel_ready",
       "file": "09_chatbot_panel_ready.png",
       "description": "Document Analyst Chatbot ready for interactive questions",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\09_chatbot_panel_ready.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\09_chatbot_panel_ready.png"
     },
     {
       "name": "10_chatbot_revenue_qa",
       "file": "10_chatbot_revenue_qa.png",
       "description": "Chatbot answering revenue ($118.5B) and gross margin (21.4%) with source citations",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\10_chatbot_revenue_qa.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\10_chatbot_revenue_qa.png"
     },
     {
       "name": "11_chatbot_profit_forecast_qa",
       "file": "11_chatbot_profit_forecast_qa.png",
       "description": "Chatbot answering net profit ($12.6B) and 2026 delivery guidance (2.6M units)",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\11_chatbot_profit_forecast_qa.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\11_chatbot_profit_forecast_qa.png"
     },
     {
       "name": "12_chatbot_risks_market_qa",
       "file": "12_chatbot_risks_market_qa.png",
       "description": "Chatbot detailing supply chain, regulatory scrutiny, and interest rate sensitivities",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\12_chatbot_risks_market_qa.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\12_chatbot_risks_market_qa.png"
     },
     {
       "name": "13_chatbot_project_faq_qa",
       "file": "13_chatbot_project_faq_qa.png",
       "description": "Chatbot answering project FAQ (PDF format, 50MB size limit, processing workflow)",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\13_chatbot_project_faq_qa.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\13_chatbot_project_faq_qa.png"
     },
     {
       "name": "14_financial_analysis_dashboard",
       "file": "14_financial_analysis_dashboard.png",
       "description": "Financial analysis dashboard with metrics, red flags and forecasts",
-      "path": "e:\\Multi-Agent Financial Research System\\var\\screenshots\\14_financial_analysis_dashboard.png"
+      "path": "E:\\Multi-Agent Financial Research System\\var\\screenshots\\14_financial_analysis_dashboard.png"
     }
   ],
   "chat_results": [

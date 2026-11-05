@@ -7,7 +7,7 @@ Capabilities
 ------------
 * **Document Q&A**: answers questions grounded in the indexed chunks of the
   workspace (revenue, profit, losses, forecasts, market rates, risks …).
-* **Project Q&A**: answers questions about the application itself – how to
+* **Project Q&A**: answers questions about the application itself - how to
   upload files, supported formats, file size limits, workflow, etc.
 * **History**: the caller may pass a conversation history so the bot can
   follow up naturally.
@@ -18,8 +18,6 @@ from __future__ import annotations
 
 import re
 import time
-from collections.abc import Callable
-from dataclasses import dataclass, field
 from typing import Annotated, Any
 from uuid import UUID, uuid4
 
@@ -112,7 +110,7 @@ _PROJECT_FAQ: list[tuple[list[str], str]] = [
             "2. Inside the workspace click **Upload Document**.\n"
             "3. Select a PDF file from your computer (max 50 MB).\n"
             "4. Optionally fill in company name, document type and fiscal period metadata.\n"
-            "5. Click **Upload** – the system validates, extracts, chunks and indexes the "
+            "5. Click **Upload** - the system validates, extracts, chunks and indexes the "
             "document automatically. Status transitions: *queued → validating → extracting "
             "→ chunking → embedding → indexing → completed*.\n\n"
             "Once status is **completed** you can search and ask questions about it."
@@ -143,7 +141,7 @@ _PROJECT_FAQ: list[tuple[list[str], str]] = [
         (
             "**Workspaces**\n\n"
             "A workspace is a container for a research project.  You can create as many "
-            "workspaces as you like – one per company, one per sector, one per theme.\n\n"
+            "workspaces as you like - one per company, one per sector, one per theme.\n\n"
             "Documents uploaded into a workspace are only searchable within that workspace, "
             "so your Apple and JPMorgan research never mixes."
         ),
@@ -186,9 +184,9 @@ _PROJECT_FAQ: list[tuple[list[str], str]] = [
         (
             "**Export**\n\n"
             "Financial metrics, calculations and forecasts can be exported as:\n"
-            "• **CSV** – comma-separated values\n"
-            "• **JSON** – machine-readable object array\n"
-            "• **XLSX** – Excel spreadsheet\n\n"
+            "• **CSV** - comma-separated values\n"
+            "• **JSON** - machine-readable object array\n"
+            "• **XLSX** - Excel spreadsheet\n\n"
             "Use the Export panel inside a workspace or POST to "
             "`/api/v1/workspaces/{id}/exports`."
         ),
@@ -305,7 +303,7 @@ def _synthesise_answer(question: str, chunks: list[Any]) -> str:
 
     # --- Build a detailed structured answer ---
     lines: list[str] = []
-    lines.append(f"**Based on the uploaded documents:**\n")
+    lines.append("**Based on the uploaded documents:**\n")
 
     # Pull out key numbers where relevant
     if q_type == "revenue":
@@ -420,7 +418,7 @@ def chat(
         workspace_service.get_workspace(workspace_id, owner_id=scope)
     except NotFoundError:
         from fastapi import HTTPException
-        raise HTTPException(status_code=404, detail="Workspace not found")
+        raise HTTPException(status_code=404, detail="Workspace not found") from None
 
     question = payload.question.strip()
 

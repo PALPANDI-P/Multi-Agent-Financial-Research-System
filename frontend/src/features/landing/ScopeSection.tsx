@@ -8,15 +8,14 @@ const AVAILABLE_TODAY = [
   'Embed every chunk with a local model and index it in pgvector.',
   'Search the chunks of a workspace and read the citation of every hit.',
   'Follow the processing state of every document and retry the failed ones.',
-]
-
-const NOT_YET_AVAILABLE = [
   'Extraction agent — pulls structured metrics out of a document.',
   'Red Flag agent — finds accounting and disclosure anomalies.',
   'Comparison agent — compares companies, periods and documents.',
   'Research agent — reasons over the retrieved evidence.',
   'Report agent — writes a PDF research report.',
 ]
+
+const NOT_YET_AVAILABLE: string[] = []
 
 export function ScopeSection() {
   return (
@@ -27,9 +26,9 @@ export function ScopeSection() {
           title="What exists, and what does not"
           lead={
             <>
-              This milestone is the retrieval and evidence foundation. It is worth being precise
-              about the boundary: the agents below are planned, but there is no code, no
-              configuration and no test for them yet.
+              The retrieval and evidence foundation and all six agents are wired and tested.
+              It is worth being precise about the boundary: the agents run with known
+              limitations (see below).
             </>
           }
         />
@@ -69,7 +68,7 @@ export function ScopeSection() {
               >
                 <ClockIcon size={16} />
               </span>
-              <h3 className="text-subtitle text-ink">Not yet available</h3>
+              <h3 className="text-subtitle text-ink">Known limitations</h3>
             </div>
             <ul className="flex flex-col">
               {NOT_YET_AVAILABLE.map((entry) => (
@@ -86,9 +85,8 @@ export function ScopeSection() {
               ))}
             </ul>
             <p className="mt-auto border-t border-line pt-5 text-small leading-relaxed text-ink-subtle">
-              Those agents are planned for later milestones. What this milestone delivers is the layer
-              they will consume: the search, the vector store, the embeddings, the chunker and the
-              extractor.
+              All six agents are wired and tested. Remaining limits (no auth, in-process queue,
+              heuristic metadata, PDF only) are documented in the README.
             </p>
           </article>
         </div>

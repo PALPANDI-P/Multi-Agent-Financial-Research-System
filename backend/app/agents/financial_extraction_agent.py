@@ -76,6 +76,15 @@ def _currency_from_text(text):
     for code in _KNOWN_CURRENCIES:
         if re.search(rf"\b{code}\b", upper):
             return code
+    lowered = text.lower()
+    if "dollar" in lowered:
+        return "USD"
+    if "euro" in lowered:
+        return "EUR"
+    if "pound" in lowered:
+        return "GBP"
+    if "yen" in lowered:
+        return "JPY"
     return None
 
 
@@ -333,9 +342,7 @@ class TextExtractionStrategy:
         for metric_type, keywords in keyword_groups.items():
             for keyword in keywords:
                 for match in re.finditer(rf"\b{re.escape(keyword)}\b", text, re.IGNORECASE):
-                    ws = max(0, match.start() - 80)
-                    we = min(len(text), match.end() + 80)
-                    window = text[ws:we]
+                    window = text[match.end():min(len(text), match.end() + 100)]
                     num_match = re.search(
                         r"[\$€£¥?]?\s*\(?\d[\d,\.]*\)?\s*(?:billion|million|thousand|percent|%|bps)?",
                         window, re.IGNORECASE,

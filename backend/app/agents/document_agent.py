@@ -123,6 +123,53 @@ class DocumentAgent:
         except Exception as exc:
             return self._fail(document_id, job_id, exc)
 
+        # Run financial extraction after pipeline completion and persist metrics.
+        try:
+            from app.agents.financial_extraction_agent import FinancialExtractionAgent
+            from app.repositories.financial_metric_repository import FinancialMetricRepository
+
+            agent = FinancialExtractionAgent(session_factory=self._session_factory)
+            extraction = agent.extract(
+                document_id=document_id,
+                workspace_id=document.workspace_id,
+            )
+
+            with self._session_factory() as session:
+                repo = FinancialMetricRepository(session)
+                repo.delete_by_document(document_id, commit=False)
+                for metric in getattr(extraction, "metrics", []) or []:
+                    metric_type = getattr(metric, "metric_type", None)
+                    metric_name = getattr(metric, "metric_name", None)
+                    metric_value = getattr(metric, "metric_value", None)
+                    if not metric_type or not metric_name or metric_value is None:
+                        continue
+                    repo.create(
+                        workspace_id=document.workspace_id,
+                        document_id=document_id,
+                        metric_type=metric_type,
+                        metric_name=metric_name,
+                        metric_value=metric_value,
+                        currency=getattr(metric, "currency", None),
+                        unit=getattr(metric, "unit", None),
+                        source_document_chunk=str(
+                            getattr(metric, "source_document_chunk", None)
+                            or getattr(metric, "source_evidence", None)
+                            or getattr(metric, "source_excerpt", None)
+                            or ""
+                        ),
+                        is_estimated=bool(getattr(metric, "is_estimated", False)),
+                        is_projected=bool(getattr(metric, "is_projected", False)),
+                        notes=getattr(metric, "notes", None),
+                        commit=False,
+                    )
+                session.commit()
+        except Exception as exc:
+            logger.warning(
+                "financial extraction for document %s failed: %s",
+                document_id,
+                exc,
+            )
+
         self._mark_completed(job_id)
         self._apply_metadata(document_id, result.metadata)
 

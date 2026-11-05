@@ -72,8 +72,9 @@ export function Footer({ links, stack, action, className }: FooterProps) {
 
         <div className="flex flex-col gap-3 border-t border-line pt-6 text-caption text-ink-subtle sm:flex-row sm:items-center sm:justify-between">
           <p className="max-w-2xl">
-            Milestone 1: the retrieval and evidence foundation. The Extraction, Red Flag,
-            Comparison, Research and Report agents are planned for later milestones.
+            Milestone 1: the retrieval and evidence foundation plus six wired and tested
+            agents (Extraction, Red Flag, Comparison, Research, Report and Document), with
+            known limitations.
           </p>
           <p className="flex items-center gap-4">
             <Link

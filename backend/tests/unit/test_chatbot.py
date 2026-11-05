@@ -2,26 +2,20 @@
 
 from __future__ import annotations
 
-import json
-from unittest.mock import MagicMock, patch
-from uuid import UUID, uuid4
+from unittest.mock import MagicMock
+from uuid import uuid4
 
 import pytest
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
 
 # ---------------------------------------------------------------------------
-# Helpers – import the module under test
+# Helpers - import the module under test
 # ---------------------------------------------------------------------------
-
 from app.api.v1.chatbot import (
     _classify_question,
     _extract_numbers,
     _project_answer,
     _synthesise_answer,
-    router,
 )
-
 
 # ---------------------------------------------------------------------------
 # Tests for _classify_question
@@ -222,9 +216,9 @@ class TestSynthesiseAnswer:
 # Endpoint handler unit tests (direct function call, no HTTP/DB required)
 # ---------------------------------------------------------------------------
 
-from app.api.v1.chatbot import ChatRequest, chat
-from app.services.auth_service import UserSummary
-from app.services.search_service import SearchResultItem, SearchResults
+from app.api.v1.chatbot import ChatRequest, chat  # noqa: E402
+from app.services.auth_service import UserSummary  # noqa: E402
+from app.services.search_service import SearchResultItem, SearchResults  # noqa: E402
 
 
 class TestChatEndpoint:
@@ -346,8 +340,9 @@ class TestChatEndpoint:
 
     def test_workspace_not_found_raises(self):
         mock_ws, mock_search, mock_user = self._make_mocks()
-        from app.core.exceptions import NotFoundError
         from fastapi import HTTPException
+
+        from app.core.exceptions import NotFoundError
         mock_ws.get_workspace.side_effect = NotFoundError("not found")
 
         ws_id = uuid4()

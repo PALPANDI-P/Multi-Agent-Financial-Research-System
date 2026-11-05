@@ -236,23 +236,60 @@ def _to_decimal(value):
     return Decimal(str(value))
 
 
+def _json_safe(value, _seen=None):
+    if _seen is None:
+        _seen = set()
+    if value is None or isinstance(value, (bool, int, float, str)):
+        return value
+    if isinstance(value, UUID):
+        return str(value)
+    if isinstance(value, Decimal):
+        return value
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return [_json_safe(v, _seen) for v in value]
+    if isinstance(value, dict):
+        return {str(k): _json_safe(v, _seen) for k, v in value.items()}
+    if hasattr(value, "as_dict") and callable(value.as_dict):
+        try:
+            return _json_safe(value.as_dict(), _seen)
+        except Exception:
+            pass
+    if hasattr(value, "to_dict") and callable(value.to_dict):
+        try:
+            return _json_safe(value.to_dict(), _seen)
+        except Exception:
+            pass
+    oid = id(value)
+    if oid in _seen:
+        return str(value)
+    _seen.add(oid)
+    if hasattr(value, "__dict__"):
+        try:
+            data = {k: v for k, v in vars(value).items() if not k.startswith("_")}
+            return _json_safe(data, _seen)
+        except Exception:
+            pass
+    return value
+
 def _result_dict(result):
     if hasattr(result, "as_dict") and callable(result.as_dict):
         try:
-            return result.as_dict()
+            return _json_safe(result.as_dict())
         except Exception:
             pass
     if hasattr(result, "to_dict") and callable(result.to_dict):
         try:
-            return result.to_dict()
+            return _json_safe(result.to_dict())
         except Exception:
             pass
     try:
         from dataclasses import asdict as _asdict
 
-        return _asdict(result)
+        return _json_safe(_asdict(result))
     except Exception:
-        return {"result": result}
+        return {"result": _json_safe(result)}
 
 
 @router.get("/workspaces/{workspace_id}/financial-metrics", response_model=ListEnvelope)

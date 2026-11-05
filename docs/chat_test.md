@@ -1,7 +1,7 @@
 # Chat Test Results
 
-Workspace: `cfcbb76a-4112-49ee-b7c8-e7986c5bcf8f`
-Document: Apple FY2025 10-K (`9326c1ea-4302-4d22-bda2-d5c93315f5be`), status: `completed`
+Workspace: `90044e1b-5fa2-42f3-b86a-4b06cd9744f0`
+Document: Apple FY2025 10-K (`03566384-4f8c-44db-b8c0-19a113b273a9`), status: `embedding`
 
 ## Q: What file formats are supported?
 
@@ -51,15 +51,12 @@ Supplementary sub-stages recorded in `processing_stage` include `pdf_text`, `pdf
 ```
 Research question: What was revenue?
 
-Answer (grounded in retrieved evidence):
-Facts:
-- Note 2 – Revenue
-The Company recognizes revenue at the amount to which it expects to be entitled when control of products or services is
-transferred to its customers. Control is generally transferred when the Company has a present right to payment and title and the
-significant risks and rewards of ownership of products or services are transferred to its customers. For most of the Company’s
-Products net sales, control transfers when products are shipped. For the Company’s Services net sales, control transfers over
-time as services are delivered. Payment for Products and Services net sales is collected within a short period following transfer
-of control or commencement of delivery of services, as applicab
+Answer: The available indexed documents do not contain enough information to answer this question.
+
+Missing information:
+- No retrieved evidence found for: What was revenue?
+- Financial metrics/calculations were not available to support numeric conclusions.
+- Insufficient information in the indexed documents to answer the question.
 ```
 
 ## Q: Forecast revenue for next 2 periods
@@ -74,7 +71,3 @@ Implemented in `app/services/forecasting_service.py`.
 - Scenario analysis applies adjustments to a base forecast.
 
 ```
-
-## Errors
-
-None encountered.

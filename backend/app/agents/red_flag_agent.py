@@ -627,7 +627,7 @@ class RedFlagAgent:
                         agent_run_id=None, session_factory=None, commit=True, **kwargs) -> list[RedFlagFinding]:
         sf = session_factory or self.session_factory
         if sf is None:
-            return list(findings or [])
+            return findings
         findings = list(findings or [])
         ws = workspace_id
         doc = document_id
